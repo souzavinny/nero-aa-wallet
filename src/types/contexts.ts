@@ -16,7 +16,6 @@ import {
   WalletConfig,
 } from '@/types'
 
-
 export interface ProviderProps {
   children: ReactNode
 }

@@ -14,7 +14,7 @@ interface Web3AuthConfig {
     logo: string
     walletBackground: string
     clientId: string
-    networkType: WEB3AUTH_NETWORK_TYPE,
+    networkType: WEB3AUTH_NETWORK_TYPE
     uiConfig: {
       appName: string
       mode: string

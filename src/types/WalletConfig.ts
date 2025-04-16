@@ -1,4 +1,4 @@
-import {WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 export interface WalletConfig {
   rainbowKitProjectId: string
   walletName: string

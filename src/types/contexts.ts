@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 import { ContractInterface, BigNumberish } from 'ethers'
 import { Client, UserOperationMiddlewareFn } from 'userop'
 import { Presets } from 'userop'
@@ -15,7 +16,6 @@ import {
   WalletConfig,
 } from '@/types'
 
-import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 
 export interface ProviderProps {
   children: ReactNode

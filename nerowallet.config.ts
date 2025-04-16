@@ -92,7 +92,7 @@ const config = {
       },
       web3auth: {
         clientId: import.meta.env.VITE_WEB3AUTH_ID ?? '',
-        network: 'testnet',
+        network: 'mainnet',
         uiConfig: {
           appName: 'NERO',
           mode: 'light',

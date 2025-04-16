@@ -1,6 +1,6 @@
 import { Wallet, WalletDetailsParams } from '@rainbow-me/rainbowkit'
 import { AuthAdapter } from '@web3auth/auth-adapter'
-import { CHAIN_NAMESPACES, CustomChainConfig, UX_MODE } from '@web3auth/base'
+import { CHAIN_NAMESPACES, CustomChainConfig, UX_MODE, WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider'
 import { Web3Auth } from '@web3auth/modal'
 import { Web3AuthConnector } from '@web3auth/web3auth-wagmi-connector'
@@ -14,6 +14,7 @@ interface Web3AuthConfig {
     logo: string
     walletBackground: string
     clientId: string
+    networkType: WEB3AUTH_NETWORK_TYPE,
     uiConfig: {
       appName: string
       mode: string
@@ -72,7 +73,7 @@ export const rainbowWeb3AuthConnector = ({
 
       const web3AuthInstance = new Web3Auth({
         clientId: walletConfig.clientId,
-        web3AuthNetwork: 'testnet',
+        web3AuthNetwork: walletConfig.networkType,
         privateKeyProvider: privateKeyProvider,
         uiConfig: {
           appName: walletConfig.uiConfig.appName,
@@ -92,7 +93,7 @@ export const rainbowWeb3AuthConnector = ({
         privateKeyProvider: privateKeyProvider,
         adapterSettings: {
           clientId: walletConfig.clientId,
-          network: 'testnet',
+          network: walletConfig.networkType,
           uxMode: 'redirect',
           loginConfig: {
             google: {

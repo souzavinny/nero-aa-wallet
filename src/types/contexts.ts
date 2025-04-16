@@ -15,6 +15,8 @@ import {
   WalletConfig,
 } from '@/types'
 
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
+
 export interface ProviderProps {
   children: ReactNode
 }
@@ -93,7 +95,7 @@ export interface ConfigContextProps {
   explorerAPI: string
   chainId: number
   chainName: string
-  networkType: string
+  networkType: WEB3AUTH_NETWORK_TYPE
   bundlerUrl: string
   contactAs: string
   PrivacyPolicy: string

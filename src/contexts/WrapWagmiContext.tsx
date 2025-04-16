@@ -26,6 +26,7 @@ export const WrapWagmiProvider: React.FC<WrapWagmiContextProps> = ({ children })
     projectId,
     chainId,
     chainName,
+    networkType,
     rpcUrl,
     explorerUrl,
     tokenName,
@@ -68,6 +69,7 @@ export const WrapWagmiProvider: React.FC<WrapWagmiContextProps> = ({ children })
     chain: neroChain,
     walletConfig: {
       name: walletName,
+      networkType: networkType,
       logo: walletLogo,
       walletBackground,
       clientId,

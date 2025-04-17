@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base';
 import { ContractInterface, BigNumberish } from 'ethers';
 import { Client, UserOperationMiddlewareFn } from 'userop';
 import { Presets } from 'userop';
@@ -74,7 +75,7 @@ export interface ConfigContextProps {
     explorerAPI: string;
     chainId: number;
     chainName: string;
-    networkType: string;
+    networkType: WEB3AUTH_NETWORK_TYPE;
     bundlerUrl: string;
     contactAs: string;
     PrivacyPolicy: string;

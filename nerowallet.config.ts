@@ -14,10 +14,10 @@ const config = {
         name: 'NERO Testnet',
         logo: NEROLogoSquareIcon,
         networkType: 'testnet',
-        rpc: import.meta.env.VITE_NERO_RPC_URL ?? 'https://rpc-testnet.nerochain.io',
-        chainId: Number(import.meta.env.VITE_CHAIN_ID) || 689,
-        explorer: import.meta.env.VITE_EXPLORER_URL ?? 'https://testnet.neroscan.io',
-        explorerAPI: import.meta.env.VITE_EXPLORER_API ?? 'https://api-testnet.neroscan.io',
+        rpc: 'https://rpc-testnet.nerochain.io',
+        chainId: 689,
+        explorer: 'https://testnet.neroscan.io',
+        explorerAPI: 'https://api-testnet.neroscan.io',
         nativeToken: {
           decimals: 18,
           name: 'NERO',
@@ -25,9 +25,9 @@ const config = {
         },
       },
       aa: {
-        bundler: import.meta.env.VITE_BUNDLER_URL ?? 'https://bundler.service.nerochain.io',
-        paymaster: import.meta.env.VITE_PAYMASTER_URL ?? 'https://paymaster-testnet.nerochain.io',
-        paymasterAPIKey: import.meta.env.VITE_PAYMASTER_API ?? '',
+        bundler: 'https://bundler.service.nerochain.io',
+        paymaster: 'https://paymaster-testnet.nerochain.io',
+        paymasterAPIKey: import.meta.env.VITE_TESTNET_PAYMASTER_API ?? '',
       },
       aaContracts: {
         entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
@@ -35,7 +35,7 @@ const config = {
         tokenPaymaster: '0x5a6680dFd4a77FEea0A7be291147768EaA2414ad',
       },
       web3auth: {
-        clientId: import.meta.env.VITE_WEB3AUTH_ID ?? '',
+        clientId: import.meta.env.VITE_TESTNET_WEB3AUTH_ID ?? '',
         network: 'testnet',
         uiConfig: {
           appName: 'NERO',
@@ -70,10 +70,10 @@ const config = {
         name: 'NERO Mainnet',
         logo: NEROLogoSquareIcon,
         networkType: 'mainnet',
-        rpc: import.meta.env.VITE_NERO_RPC_URL ?? 'https://rpc.nerochain.io',
-        chainId: Number(import.meta.env.VITE_CHAIN_ID) || 1689,
-        explorer: import.meta.env.VITE_EXPLORER_URL ?? 'https://neroscan.io',
-        explorerAPI: import.meta.env.VITE_EXPLORER_API ?? 'https://api.neroscan.io',
+        rpc: 'https://rpc.nerochain.io',
+        chainId: 1689,
+        explorer: 'https://neroscan.io',
+        explorerAPI: 'https://api.neroscan.io',
         nativeToken: {
           decimals: 18,
           name: 'NERO',
@@ -81,9 +81,9 @@ const config = {
         },
       },
       aa: {
-        bundler: import.meta.env.VITE_BUNDLER_URL ?? 'https://bundler-mainnet.nerochain.io',
-        paymaster: import.meta.env.VITE_PAYMASTER_URL ?? 'https://paymaster-mainnet.nerochain.io',
-        paymasterAPIKey: import.meta.env.VITE_PAYMASTER_API ?? '',
+        bundler: 'https://bundler-mainnet.nerochain.io',
+        paymaster: 'https://paymaster-mainnet.nerochain.io',
+        paymasterAPIKey: import.meta.env.VITE_MAINNET_PAYMASTER_API ?? '',
       },
       aaContracts: {
         entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
@@ -91,8 +91,8 @@ const config = {
         tokenPaymaster: '0xC42E90D29D478ccFeCC28d3B838824E57e51F284',
       },
       web3auth: {
-        clientId: import.meta.env.VITE_WEB3AUTH_ID ?? '',
-        network: 'testnet',
+        clientId: import.meta.env.VITE_MAINNET_WEB3AUTH_ID ?? '',
+        network: 'mainnet',
         uiConfig: {
           appName: 'NERO',
           mode: 'light',

@@ -130,17 +130,15 @@ const TokenSelect: React.FC<
                 </div>
               )}
             </div>
-            <div className='fixed bottom-12 left-0 right-0 flex justify-between p-10'>
-              <Button
-                onClick={onClose}
-                variant='text'
-                icon={AiFillCaretLeft}
-                iconPosition='left'
-                className='flex items-center text-sm text-text-primary px-2 mb-1 rounded-full'
-              >
-                Back
-              </Button>
-            </div>
+            <Button
+              onClick={onClose}
+              variant='text'
+              icon={AiFillCaretLeft}
+              iconPosition='left'
+              className='flex items-center text-sm text-text-primary px-2 mb-1 rounded-full'
+            >
+              Back
+            </Button>
           </div>
         </div>
       </div>

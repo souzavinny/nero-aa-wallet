@@ -14,7 +14,7 @@ interface Web3AuthConfig {
     logo: string
     walletBackground: string
     clientId: string
-    networkType: WEB3AUTH_NETWORK_TYPE
+    networkType: string
     uiConfig: {
       appName: string
       mode: string
@@ -73,7 +73,7 @@ export const rainbowWeb3AuthConnector = ({
 
       const web3AuthInstance = new Web3Auth({
         clientId: walletConfig.clientId,
-        web3AuthNetwork: walletConfig.networkType,
+        web3AuthNetwork: walletConfig.networkType as WEB3AUTH_NETWORK_TYPE,
         privateKeyProvider: privateKeyProvider,
         uiConfig: {
           appName: walletConfig.uiConfig.appName,
@@ -93,7 +93,7 @@ export const rainbowWeb3AuthConnector = ({
         privateKeyProvider: privateKeyProvider,
         adapterSettings: {
           clientId: walletConfig.clientId,
-          network: walletConfig.networkType,
+          network: walletConfig.networkType as WEB3AUTH_NETWORK_TYPE,
           uxMode: 'redirect',
           loginConfig: {
             google: {

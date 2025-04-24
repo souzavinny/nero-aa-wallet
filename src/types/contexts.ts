@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
-import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
-import { ContractInterface, BigNumberish } from 'ethers'
+import { ContractInterface, BigNumberish, ethers, BytesLike } from 'ethers'
 import { Client, UserOperationMiddlewareFn } from 'userop'
 import { Presets } from 'userop'
 import { SimpleAccount } from '@/helper/simpleAccount'
@@ -18,6 +17,7 @@ import {
 
 export interface ProviderProps {
   children: ReactNode
+  onError?: boolean
 }
 
 export interface BaseTransferContextType {
@@ -94,7 +94,7 @@ export interface ConfigContextProps {
   explorerAPI: string
   chainId: number
   chainName: string
-  networkType: WEB3AUTH_NETWORK_TYPE
+  networkType: string
   bundlerUrl: string
   contactAs: string
   PrivacyPolicy: string
@@ -183,6 +183,7 @@ export interface PaymasterContextType {
   clearToken: () => void
   isPaymentSelected: boolean
   setIsPaymentSelected: (selected: boolean) => void
+  handleError?: (error: any, aaAddress: string, title: string) => void
 }
 
 export interface UserOperation {
@@ -210,4 +211,10 @@ export interface SendUserOpContextProps {
   isWalletPanel: boolean
   setIsWalletPanel: (value: boolean) => void
   forceOpenPanel: () => void
+  handleError?: (
+    error: any,
+    aaAddress: string,
+    title: string,
+    operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
+  ) => void
 }

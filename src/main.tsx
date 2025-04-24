@@ -6,7 +6,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import '@/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <SocialWallet config={neroConfig} mode='sidebar'>
+  <SocialWallet config={neroConfig} mode='sidebar' onError={true}>
     <Sample />
   </SocialWallet>,
 )

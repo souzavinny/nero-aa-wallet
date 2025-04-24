@@ -65,62 +65,62 @@ const config = {
         },
       },
     },
-    // {
-    //   chain: {
-    //     name: 'NERO Mainnet',
-    //     logo: NEROLogoSquareIcon,
-    //     networkType: 'mainnet',
-    //     rpc: 'https://rpc.nerochain.io',
-    //     chainId: 1689,
-    //     explorer: 'https://neroscan.io',
-    //     explorerAPI: 'https://api.neroscan.io',
-    //     nativeToken: {
-    //       decimals: 18,
-    //       name: 'NERO',
-    //       symbol: 'NERO',
-    //     },
-    //   },
-    //   aa: {
-    //     bundler: 'https://bundler-mainnet.nerochain.io',
-    //     paymaster: 'https://paymaster-mainnet.nerochain.io',
-    //     paymasterAPIKey: import.meta.env.VITE_MAINNET_PAYMASTER_API ?? '',
-    //   },
-    //   aaContracts: {
-    //     entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-    //     accountFactory: '0x9406Cc6185a346906296840746125a0E44976454',
-    //     tokenPaymaster: '0xC42E90D29D478ccFeCC28d3B838824E57e51F284',
-    //   },
-    //   web3auth: {
-    //     clientId: import.meta.env.VITE_MAINNET_WEB3AUTH_ID ?? '',
-    //     network: 'mainnet',
-    //     uiConfig: {
-    //       appName: 'NERO',
-    //       mode: 'light',
-    //       useLogoLoader: true,
-    //       defaultLanguage: 'en',
-    //       theme: {
-    //         primary: '#768729',
-    //       },
-    //       loginMethodsOrder: ['google', 'facebook', 'discord'],
-    //       uxMode: 'redirect',
-    //       modalZIndex: '2147483647',
-    //     },
-    //     loginConfig: {
-    //       google: {
-    //         name: 'google',
-    //         verifier: 'NeroTest-Google-Maintest',
-    //         typeOfLogin: 'google',
-    //         clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-    //       },
-    //       facebook: {
-    //         name: 'facebook',
-    //         verifier: 'NeroTest-Facebook-Maintest',
-    //         typeOfLogin: 'facebook',
-    //         clientId: import.meta.env.VITE_FACEBOOK_CLIENT_ID,
-    //       },
-    //     },
-    //   },
-    // },
+    {
+      chain: {
+        name: 'NERO Mainnet',
+        logo: NEROLogoSquareIcon,
+        networkType: 'mainnet',
+        rpc: 'https://rpc.nerochain.io',
+        chainId: 1689,
+        explorer: 'https://neroscan.io',
+        explorerAPI: 'https://api.neroscan.io',
+        nativeToken: {
+          decimals: 18,
+          name: 'NERO',
+          symbol: 'NERO',
+        },
+      },
+      aa: {
+        bundler: 'https://bundler-mainnet.nerochain.io',
+        paymaster: 'https://paymaster-mainnet.nerochain.io',
+        paymasterAPIKey: import.meta.env.VITE_MAINNET_PAYMASTER_API ?? '',
+      },
+      aaContracts: {
+        entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+        accountFactory: '0x9406Cc6185a346906296840746125a0E44976454',
+        tokenPaymaster: '0xC42E90D29D478ccFeCC28d3B838824E57e51F284',
+      },
+      web3auth: {
+        clientId: import.meta.env.VITE_MAINNET_WEB3AUTH_ID ?? '',
+        network: 'mainnet',
+        uiConfig: {
+          appName: 'NERO',
+          mode: 'light',
+          useLogoLoader: true,
+          defaultLanguage: 'en',
+          theme: {
+            primary: '#768729',
+          },
+          loginMethodsOrder: ['google', 'facebook', 'discord'],
+          uxMode: 'redirect',
+          modalZIndex: '2147483647',
+        },
+        loginConfig: {
+          google: {
+            name: 'google',
+            verifier: 'NeroTest-Google-Maintest',
+            typeOfLogin: 'google',
+            clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          },
+          facebook: {
+            name: 'facebook',
+            verifier: 'NeroTest-Facebook-Maintest',
+            typeOfLogin: 'facebook',
+            clientId: import.meta.env.VITE_FACEBOOK_CLIENT_ID,
+          },
+        },
+      },
+    },
   ],
 }
 

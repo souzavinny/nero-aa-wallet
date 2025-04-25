@@ -24,7 +24,7 @@ export const useEstimateUserOpFee = () => {
   const { initBuilder } = useBuilderWithPaymaster(signer)
   const { tokenPaymaster } = useConfig()
 
-  const { handleError } = useContext(SendUserOpContext)!
+  const { onError } = useContext(SendUserOpContext)!
 
   /**
    * allowanceを確認する関数
@@ -204,11 +204,10 @@ export const useEstimateUserOpFee = () => {
             }
           }
         }
-
         return ethers.utils.formatEther(totalFeeWei)
       } catch (error) {
-        if (handleError) {
-          handleError(error, AAaddress, 'EstimateUserOpFee error')
+        if (onError) {
+          onError(error, AAaddress, 'EstimateUserOpFee error')
         }
         return TOKEN_CONFIG.FALLBACK_GAS_ESTIMATE
       }

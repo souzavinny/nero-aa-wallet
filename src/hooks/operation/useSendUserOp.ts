@@ -22,13 +22,8 @@ export const useSendUserOp = () => {
     throw new Error('SendUserOpContext is undefined')
   }
 
-  const {
-    userOperations,
-    setUserOperations,
-    setLatestUserOpResult,
-    latestUserOpResult,
-    handleError,
-  } = useContext(SendUserOpContext)!
+  const { userOperations, setUserOperations, setLatestUserOpResult, latestUserOpResult, onError } =
+    useContext(SendUserOpContext)!
 
   const [resolveFunc, setResolveFunc] = useState<((value: any) => void) | null>(null)
   const [pendingUserOpHash, setPendingUserOpHash] = useState<string | null>(null)
@@ -209,8 +204,8 @@ export const useSendUserOp = () => {
           errorMsg.includes('insufficient balance') ||
           false
 
-        if (handleError && !isUserError) {
-          handleError(error, AAaddress, 'SendUserOp error', operations)
+        if (onError && !isUserError) {
+          onError(error, AAaddress, 'SendUserOp error', operations)
         }
         throw error
       }
@@ -223,7 +218,7 @@ export const useSendUserOp = () => {
       userOperations,
       tokenPaymaster,
       ensurePaymasterApproval,
-      handleError,
+      onError,
     ],
   )
 

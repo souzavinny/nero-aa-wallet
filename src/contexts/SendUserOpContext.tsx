@@ -1,12 +1,10 @@
-import React, { createContext, useCallback, useState } from 'react'
-import { BytesLike, ethers } from 'ethers'
+import React, { createContext, useState } from 'react'
 import {
   UserOperation,
   UserOperationResultInterface,
   SendUserOpContextProps,
   ProviderProps,
 } from '@/types'
-import Sentry from '@/utils/sentry'
 
 export const SendUserOpContext = createContext<SendUserOpContextProps | undefined>(undefined)
 
@@ -18,8 +16,6 @@ export const SendUserOpProvider: React.FC<ProviderProps> = ({ children, onError 
   )
   const [isWalletPanel, setIsWalletPanel] = useState(false)
 
-  const [reportedErrors] = useState(new Set())
-
   const clearUserOperations = () => {
     setUserOperations([])
   }
@@ -27,38 +23,6 @@ export const SendUserOpProvider: React.FC<ProviderProps> = ({ children, onError 
   const forceOpenPanel = () => {
     setIsWalletPanel(true)
   }
-
-  const handleError = useCallback(
-    (
-      error: any,
-      aaAddress: string,
-      title: string,
-      operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
-    ) => {
-      const errorId = `${title}:${error.message || String(error)}`
-
-      if (reportedErrors.has(errorId)) {
-        return
-      }
-
-      reportedErrors.add(errorId)
-
-      if (onError) {
-        Sentry.withScope(function (scope) {
-          scope.setUser({ id: aaAddress })
-          scope.setTag('error.title', title)
-          scope.setTag('error.id', errorId)
-
-          if (operations && operations.length > 0) {
-            scope.setExtra('operations', operations)
-          }
-
-          Sentry.captureException(error)
-        })
-      }
-    },
-    [onError, reportedErrors],
-  )
 
   return (
     <SendUserOpContext.Provider
@@ -73,7 +37,7 @@ export const SendUserOpProvider: React.FC<ProviderProps> = ({ children, onError 
         isWalletPanel,
         setIsWalletPanel,
         forceOpenPanel,
-        handleError,
+        onError,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useState } from 'react'
+import React, { createContext, useState } from 'react'
 import { Presets } from 'userop'
 import { PaymasterContextType, ProviderProps } from '@/types'
 import {
@@ -9,7 +9,6 @@ import {
   PAYMASTER_MODE,
   SponsorshipInfo,
 } from '@/types/Paymaster'
-import Sentry from '@/utils/sentry'
 
 export const PaymasterContext = createContext<PaymasterContextType | undefined>(undefined)
 
@@ -31,8 +30,6 @@ export const PaymasterProvider: React.FC<ProviderProps> = ({ children, onError }
   })
 
   const [isPaymentSelected, setIsPaymentSelected] = useState(false)
-
-  const [reportedErrors] = useState(new Set())
 
   const clearPaymasterStates = () => {
     setPaymaster(false)
@@ -77,28 +74,6 @@ export const PaymasterProvider: React.FC<ProviderProps> = ({ children, onError }
     setSponsorshipInfo((prev) => ({ ...prev, freeGas: false }))
   }
 
-  const handleError = useCallback(
-    (error: any, aaAddress: string, title: string) => {
-      const errorId = `${title}:${error.message || String(error)}`
-
-      if (reportedErrors.has(errorId)) {
-        return
-      }
-
-      reportedErrors.add(errorId)
-
-      if (onError) {
-        Sentry.withScope(function (scope) {
-          scope.setUser({ id: aaAddress })
-          scope.setTag('error.title', title)
-          scope.setTag('error.id', errorId)
-          Sentry.captureException(error)
-        })
-      }
-    },
-    [onError, reportedErrors],
-  )
-
   return (
     <PaymasterContext.Provider
       value={{
@@ -126,7 +101,7 @@ export const PaymasterProvider: React.FC<ProviderProps> = ({ children, onError }
         clearToken,
         isPaymentSelected,
         setIsPaymentSelected,
-        handleError,
+        onError,
       }}
     >
       {children}

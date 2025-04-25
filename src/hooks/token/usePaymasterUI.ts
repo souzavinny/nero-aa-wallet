@@ -31,7 +31,7 @@ export const usePaymasterUI = () => {
     setTokenPayment,
     selectedMode,
     paymaster,
-    handleError,
+    onError,
   } = usePaymasterContext()
 
   const isSponsoredSelected =
@@ -63,8 +63,8 @@ export const usePaymasterUI = () => {
       }
       setLocalError(null)
     } catch (error: any) {
-      if (handleError) {
-        handleError(error, AAaddress, 'Paymaster API Error')
+      if (onError) {
+        onError(error, AAaddress, 'Paymaster Error')
       }
       console.error('Error fetching supported tokens:', error)
       let errorMessage = error?.message || 'Failed to load payment options'

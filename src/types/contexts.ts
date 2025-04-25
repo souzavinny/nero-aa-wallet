@@ -17,7 +17,12 @@ import {
 
 export interface ProviderProps {
   children: ReactNode
-  onError?: boolean
+  onError?: (
+    error: any,
+    aaAddress?: string,
+    title?: string,
+    operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
+  ) => void
 }
 
 export interface BaseTransferContextType {
@@ -183,7 +188,12 @@ export interface PaymasterContextType {
   clearToken: () => void
   isPaymentSelected: boolean
   setIsPaymentSelected: (selected: boolean) => void
-  handleError?: (error: any, aaAddress: string, title: string) => void
+  onError?: (
+    error: any,
+    aaAddress?: string,
+    title?: string,
+    operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
+  ) => void
 }
 
 export interface UserOperation {
@@ -211,10 +221,10 @@ export interface SendUserOpContextProps {
   isWalletPanel: boolean
   setIsWalletPanel: (value: boolean) => void
   forceOpenPanel: () => void
-  handleError?: (
+  onError?: (
     error: any,
-    aaAddress: string,
-    title: string,
+    aaAddress?: string,
+    title?: string,
     operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
   ) => void
 }

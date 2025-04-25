@@ -1,5 +1,4 @@
 import { Wallet } from '@rainbow-me/rainbowkit';
-import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base';
 import { Chain } from 'viem';
 interface Web3AuthConfig {
     chain: Chain;
@@ -8,7 +7,7 @@ interface Web3AuthConfig {
         logo: string;
         walletBackground: string;
         clientId: string;
-        networkType: WEB3AUTH_NETWORK_TYPE;
+        networkType: string;
         uiConfig: {
             appName: string;
             mode: string;

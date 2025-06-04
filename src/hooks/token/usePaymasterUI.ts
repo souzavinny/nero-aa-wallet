@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useSupportedTokens, usePaymasterContext, useConfig } from '@/hooks'
+import { useSupportedTokens, usePaymasterContext, useConfig, useSignature } from '@/hooks'
 import { PaymasterToken, PAYMASTER_MODE } from '@/types/Paymaster'
 
 export const usePaymasterUI = () => {
@@ -9,6 +9,7 @@ export const usePaymasterUI = () => {
   const [isRetrying, setIsRetrying] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { chainId } = useConfig()
+  const { AAaddress } = useSignature()
 
   const {
     getSupportedTokens,
@@ -30,6 +31,7 @@ export const usePaymasterUI = () => {
     setTokenPayment,
     selectedMode,
     paymaster,
+    onError,
   } = usePaymasterContext()
 
   const isSponsoredSelected =
@@ -61,6 +63,9 @@ export const usePaymasterUI = () => {
       }
       setLocalError(null)
     } catch (error: any) {
+      if (onError) {
+        onError(error, AAaddress, 'Paymaster Error')
+      }
       console.error('Error fetching supported tokens:', error)
       let errorMessage = error?.message || 'Failed to load payment options'
       if (error?.data?.Reason) {

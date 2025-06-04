@@ -2,6 +2,7 @@
 import React from 'react'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BytesLike, ethers } from 'ethers'
 import App from '@/App'
 import {
   ClientProvider,
@@ -27,6 +28,12 @@ interface SocialWalletProps {
   zIndex?: number
   children?: React.ReactNode
   mode?: 'sidebar' | 'button'
+  onError?: (
+    error: any,
+    aaAddress?: string,
+    title?: string,
+    operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
+  ) => void
 }
 
 export const SocialWallet: React.FC<SocialWalletProps> = ({
@@ -34,6 +41,7 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
   zIndex = 9999,
   children,
   mode = 'sidebar',
+  onError = undefined,
 }) => {
   const queryClient = new QueryClient()
 
@@ -44,13 +52,13 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
           <RainbowKitProvider modalSize='compact'>
             <SignatureProvider>
               <ScreenManagerProvider>
-                <PaymasterProvider>
+                <PaymasterProvider onError={onError}>
                   <TokenProvider>
                     <NFTProvider>
                       <SendProvider>
                         <MultiSendProvider>
                           <ClientProvider>
-                            <SendUserOpProvider>
+                            <SendUserOpProvider onError={onError}>
                               <TransactionProvider>
                                 {children}
                                 <div style={{ position: 'relative', zIndex: zIndex }}>

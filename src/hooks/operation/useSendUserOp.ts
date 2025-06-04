@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState, useEffect, useRef } from 'react'
 import { BytesLike, ethers } from 'ethers'
 import { ClientContext, SendUserOpContext, SignatureContext } from '@/contexts'
-import { useEstimateUserOpFee } from '@/hooks'
+import { useEstimateUserOpFee, useSignature } from '@/hooks'
 import { useEthersSigner, useConfig, useScreenManager } from '@/hooks'
 import { OperationData, UserOperation, UserOperationResultInterface, screens } from '@/types'
 import { PAYMASTER_MODE } from '@/types/Paymaster'
@@ -16,12 +16,13 @@ export const useSendUserOp = () => {
   const { tokenPaymaster } = useConfig()
   const { estimateUserOpFee, ensurePaymasterApproval } = useEstimateUserOpFee()
   const { initBuilder } = useBuilderWithPaymaster(signer)
+  const { AAaddress } = useSignature()
 
   if (!sendUserOpContext) {
     throw new Error('SendUserOpContext is undefined')
   }
 
-  const { userOperations, setUserOperations, setLatestUserOpResult, latestUserOpResult } =
+  const { userOperations, setUserOperations, setLatestUserOpResult, latestUserOpResult, onError } =
     useContext(SendUserOpContext)!
 
   const [resolveFunc, setResolveFunc] = useState<((value: any) => void) | null>(null)
@@ -116,12 +117,12 @@ export const useSendUserOp = () => {
         return null
       }
 
+      let operations: { to: string; value: ethers.BigNumberish; data: BytesLike }[] = []
+
       try {
         if (userOperations.length === 0) {
           return null
         }
-
-        let operations: { to: string; value: ethers.BigNumberish; data: BytesLike }[] = []
 
         if (usePaymaster && paymasterTokenAddress && type !== PAYMASTER_MODE.FREE_GAS) {
           try {
@@ -196,6 +197,16 @@ export const useSendUserOp = () => {
         return userOpResult
       } catch (error) {
         console.error('SendUserOp error:', error)
+        const errorMsg = error?.toString() || ''
+        const isUserError =
+          errorMsg.includes('AA33 reverted') ||
+          errorMsg.includes(`AA21 didn't pay prefund`) ||
+          errorMsg.includes('insufficient balance') ||
+          false
+
+        if (onError && !isUserError) {
+          onError(error, AAaddress, 'SendUserOp error', operations)
+        }
         throw error
       }
     },
@@ -207,6 +218,7 @@ export const useSendUserOp = () => {
       userOperations,
       tokenPaymaster,
       ensurePaymasterApproval,
+      onError,
     ],
   )
 

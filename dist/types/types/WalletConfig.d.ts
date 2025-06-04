@@ -1,4 +1,3 @@
-import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base';
 export interface WalletConfig {
     rainbowKitProjectId: string;
     walletName: string;
@@ -11,7 +10,7 @@ export interface WalletConfig {
         chain: {
             name: string;
             logo: string;
-            networkType: WEB3AUTH_NETWORK_TYPE;
+            networkType: string;
             rpc: string;
             chainId: number;
             explorer: string;

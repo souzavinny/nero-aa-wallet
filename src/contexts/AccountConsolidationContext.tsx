@@ -2,11 +2,11 @@ import React, { createContext, useCallback, useState, useMemo, useContext, useEf
 import { ethers } from 'ethers'
 import { erc20Abi } from 'viem'
 import { usePublicClient } from 'wagmi'
-import { useAccountManager, useConfig, useClassifiedTokens, useEthersSigner } from '@/hooks'
-import { ClientContext } from '@/contexts'
-import { SimpleAccount } from '@/helper/simpleAccount'
 import { ConsolidationPreviewModal } from '@/components/features/AccountSelector/ConsolidationPreviewModal'
 import { ConsolidationProgressModal } from '@/components/features/AccountSelector/ConsolidationProgressModal'
+import { ClientContext } from '@/contexts'
+import { SimpleAccount } from '@/helper/simpleAccount'
+import { useAccountManager, useConfig, useClassifiedTokens, useEthersSigner } from '@/hooks'
 import {
   AccountConsolidationContextProps,
   AccountTokenBalances,
@@ -139,13 +139,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
 
   // AA transfer function using SimpleAccount.execute (no paymaster)
   const executeTransferFromAccount = useCallback(
-    async (
-      fromAccount: AccountData,
-      toAddress: string,
-      amount: string,
-      tokenAddress?: string,
-      tokenDecimals?: number,
-    ) => {
+    async (fromAccount: AccountData, toAddress: string, amount: string, tokenAddress?: string) => {
       if (!client || !fromAccount.simpleAccountInstance) {
         throw new Error('Required dependencies not available')
       }
@@ -218,7 +212,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
           try {
             userOpResult = await fromAccount.simpleAccountInstance.checkUserOp(res.userOpHash)
           } catch (error) {
-            console.error('Error checking UserOp result:', error)
+            console.warn('Error checking UserOp result:', error)
             userOpResult = false
           }
         } else {
@@ -230,7 +224,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
 
         return { hash: res.userOpHash, receipt: userOpResult }
       } catch (error) {
-        console.error('Error in executeTransferFromAccount:', error)
+        console.warn('Error in executeTransferFromAccount:', error)
 
         // Provide more user-friendly error messages
         if (error instanceof Error) {
@@ -288,7 +282,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
               })
             }
           } catch (error) {
-            console.error(`Error fetching ${token.symbol} balance for ${account.name}:`, error)
+            console.warn(`Error fetching ${token.symbol} balance for ${account.name}:`, error)
           }
         }
 
@@ -465,7 +459,6 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
               consolidationPlan.toAccount.AAaddress,
               tokenBalance.balance,
               tokenBalance.token.contractAddress,
-              parseInt(tokenBalance.token.decimals),
             )
 
             // Update progress to completed
@@ -475,7 +468,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
               txHash: result?.hash,
             }
           } catch (error) {
-            console.error(`ERC20 transfer failed for ${tokenBalance.token.symbol}:`, error)
+            console.warn(`ERC20 transfer failed for ${tokenBalance.token.symbol}:`, error)
             // Update progress to failed
             progress.transfers[transferIndex] = {
               ...progress.transfers[transferIndex],
@@ -524,7 +517,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
               txHash: result?.hash,
             }
           } catch (error) {
-            console.error('Native transfer failed:', error)
+            console.warn('Native transfer failed:', error)
             // Update progress to failed
             progress.transfers[0] = {
               ...progress.transfers[0],
@@ -536,7 +529,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
         }
       }
     } catch (error) {
-      console.error('Error executing consolidation:', error)
+      console.warn('Error executing consolidation:', error)
       // Re-throw the error so it can be caught by the UI
       throw error
     } finally {
@@ -549,6 +542,7 @@ export const AccountConsolidationProvider: React.FC<ProviderProps> = ({ children
     initializeAccountInstance,
     signer,
     client,
+    isConsolidating,
   ])
 
   const clearConsolidation = useCallback(() => {

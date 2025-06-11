@@ -26,7 +26,7 @@ const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   const menuRef = useRef<HTMLDivElement>(null)
 
   // AccountSelector functionality
-  const { activeAccount, isCreatingAccount, accounts } = useAccountManager()
+  const { activeAccount, isCreatingAccount } = useAccountManager()
   const config = useContext(ConfigContext)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)

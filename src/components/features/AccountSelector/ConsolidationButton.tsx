@@ -3,14 +3,8 @@ import { useAccountManager, useAccountConsolidation } from '@/hooks'
 
 export const ConsolidationButton: React.FC = () => {
   const { accounts } = useAccountManager()
-  const {
-    canConsolidate,
-    isScanning,
-    isConsolidating,
-    consolidationPlan,
-    scanAccountBalances,
-    openPreviewModal,
-  } = useAccountConsolidation()
+  const { canConsolidate, isScanning, isConsolidating, scanAccountBalances, openPreviewModal } =
+    useAccountConsolidation()
 
   // Use ref to track if we're in consolidation mode to prevent unwanted closures
   const isConsolidationActiveRef = useRef(false)

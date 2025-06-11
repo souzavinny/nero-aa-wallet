@@ -1180,11 +1180,12 @@ describe('🔧 Utility Security Functions', () => {
             '1b', // Very low s
         ]
 
-        const riskySignatures = [
-          '0x' + 'a1b2c3d4'.repeat(16) + 'e5f6a7b8'.repeat(16) + '1b', // Same as first
-          '0x' + 'a1b2c3d4'.repeat(16) + 'different'.repeat(8) + '1c', // Same r value
-          '0x' + '00012345'.repeat(16) + '00067890'.repeat(16) + '1b', // Leading zeros
-        ]
+        // Test signatures may include risky patterns
+        // const riskySignatures = [
+        //   '0x' + 'a1b2c3d4'.repeat(16) + 'e5f6a7b8'.repeat(16) + '1b', // Same as first
+        //   '0x' + 'a1b2c3d4'.repeat(16) + 'different'.repeat(8) + '1c', // Same r value
+        //   '0x' + '00012345'.repeat(16) + '00067890'.repeat(16) + '1b', // Leading zeros
+        // ]
 
         // Test signatures may trigger pattern detection in repetitive data
         const safeAnalysis = analyzeSignaturePatterns(safeSignatures)

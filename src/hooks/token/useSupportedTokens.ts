@@ -73,38 +73,29 @@ export const useSupportedTokens = () => {
           usePaymaster: boolean,
           paymasterTokenAddress: string | undefined,
           type: number,
-          purpose: string,
         ) => {
-          try {
-            const builder = await initBuilder(usePaymaster, paymasterTokenAddress, type)
-            if (!builder) {
-              throw new Error(`Failed to initialize ${purpose} builder`)
-            }
-            return builder
-          } catch (error) {
-            throw error
+          const builder = await initBuilder(usePaymaster, paymasterTokenAddress, type)
+          if (!builder) {
+            throw new Error(`Failed to initialize builder`)
           }
+          return builder
         }
 
         // Initialize builders in parallel with isolation
         const [builderWithFreeGas, builderWithToken] = await Promise.all([
-          createIsolatedBuilder(true, undefined, 0, 'free gas'),
-          createIsolatedBuilder(true, undefined, 2, 'token'),
+          createIsolatedBuilder(true, undefined, 0),
+          createIsolatedBuilder(true, undefined, 2),
         ])
 
         // Create isolated API call functions with independent error handling
-        const callSupportedTokensAPI = async (builder: any, purpose: string) => {
-          try {
-            return await client.getSupportedTokens(builder)
-          } catch (error) {
-            throw error
-          }
+        const callSupportedTokensAPI = async (builder: any) => {
+          return await client.getSupportedTokens(builder)
         }
 
         // Execute API calls in parallel with error isolation
         const [freeGasResult, tokenResult] = await Promise.allSettled([
-          callSupportedTokensAPI(builderWithFreeGas, 'free gas'),
-          callSupportedTokensAPI(builderWithToken, 'token'),
+          callSupportedTokensAPI(builderWithFreeGas),
+          callSupportedTokensAPI(builderWithToken),
         ])
 
         // Process results with fallbacks

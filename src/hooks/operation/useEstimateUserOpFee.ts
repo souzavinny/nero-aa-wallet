@@ -208,15 +208,7 @@ export const useEstimateUserOpFee = () => {
         return TOKEN_CONFIG.FALLBACK_GAS_ESTIMATE
       }
     },
-    [
-      signer,
-      client,
-      simpleAccountInstance,
-      initBuilder,
-      supportedTokens,
-      tokenPaymaster,
-      ensurePaymasterApproval,
-    ],
+    [signer, client, simpleAccountInstance, initBuilder, supportedTokens, ensurePaymasterApproval],
   )
 
   return { estimateUserOpFee, ensurePaymasterApproval }

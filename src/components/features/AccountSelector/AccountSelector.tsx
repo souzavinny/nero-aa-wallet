@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useContext } from 'react'
 import { IoEarthOutline, IoChevronDown, IoCopy } from 'react-icons/io5'
 import { AccountDropdown } from './AccountDropdown'
 import { CreateAccountModal } from './CreateAccountModal'
-import { useAccountManager } from '@/hooks'
 import { ConfigContext } from '@/contexts'
+import { useAccountManager } from '@/hooks'
 
 export const AccountSelector: React.FC = () => {
   const { activeAccount, isCreatingAccount, accounts } = useAccountManager()

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { vi, beforeEach, afterEach } from 'vitest'
 
 // Mock localStorage with actual storage functionality for security tests
 const localStorageMock = (() => {
@@ -65,6 +65,7 @@ Object.defineProperty(global, 'crypto', {
 
 // Basic Date mock for deterministic testing
 const originalDateNow = Date.now
+
 beforeEach(() => {
   vi.spyOn(Date, 'now').mockReturnValue(1640995200000) // 2022-01-01 00:00:00 UTC
 })

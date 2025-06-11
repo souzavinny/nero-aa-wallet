@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { FiEyeOff, FiPlus, FiRefreshCw, FiInfo } from 'react-icons/fi'
+import { FiEyeOff, FiPlus, FiRefreshCw } from 'react-icons/fi'
+import { ConsolidationButton } from './ConsolidationButton'
 import { useAccountManager } from '@/hooks'
 import { AccountDropdownProps } from '@/types'
-import { ConsolidationButton } from './ConsolidationButton'
 
 // Custom Confirmation Modal Component
 const HideAccountConfirmModal: React.FC<{
@@ -211,7 +211,7 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onClose, onCre
 
         {/* Account List */}
         <div className='space-y-2 mb-4'>
-          {visibleAccounts.map((account, index) => {
+          {visibleAccounts.map((account) => {
             const isFirstAccount = accounts.length > 0 && accounts[0]?.id === account.id
             const canHide = visibleAccounts.length > 1 && !isFirstAccount
 

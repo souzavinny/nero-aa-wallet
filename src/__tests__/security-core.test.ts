@@ -2,21 +2,11 @@ import { vi, describe, beforeEach, test, expect } from 'vitest'
 import {
   generateDeterministicSalt,
   generateStorageKeys,
-  isValidSalt,
   sanitizeAccountName,
   validateAccountData,
   safeJsonParse,
-  isLocalStorageAvailable,
-  validateArraySize,
-  validateObjectSize,
 } from '@/utils/security'
 import { isValidAddress } from '@/utils/validation'
-
-// Simple mock for testing without external dependencies
-const createMockSigner = (address: string) => ({
-  getAddress: vi.fn().mockResolvedValue(address),
-  signMessage: vi.fn().mockResolvedValue('0xsignature'),
-})
 
 describe('🛡️ Core Security Functions', () => {
   beforeEach(() => {

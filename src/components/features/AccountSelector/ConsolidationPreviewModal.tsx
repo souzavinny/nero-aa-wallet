@@ -1,6 +1,6 @@
 import React from 'react'
-import { createPortal } from 'react-dom'
 import { ethers } from 'ethers'
+import { createPortal } from 'react-dom'
 import { ConsolidationPlan } from '@/types'
 import { formatEthBalance } from '@/utils'
 

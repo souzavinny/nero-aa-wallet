@@ -76,7 +76,7 @@ export const sanitizeAccountName = (name: string): string => {
   // Remove dangerous characters and limit length
   return (
     name
-      .replace(/[<>\"'&]/g, '')
+      .replace(/[<>"'&]/g, '')
       .substring(0, 50)
       .trim() || 'Account'
   )

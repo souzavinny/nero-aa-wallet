@@ -12,9 +12,7 @@ export const formatAndRoundBalance = (
   return roundedBalance
 }
 
-export const formatEthBalance = (
-  balance: bigint | string,
-) => {
+export const formatEthBalance = (balance: bigint | string) => {
   if (!balance) return '0'
 
   const formattedBalance = formatUnits(BigInt(balance), 18)
@@ -31,7 +29,7 @@ export const formatEthBalance = (
     // For very small amounts, show up to 8 decimal places but remove trailing zeros
     return numValue.toFixed(8).replace(/\.?0+$/, '')
   }
-  
+
   return '0'
 }
 

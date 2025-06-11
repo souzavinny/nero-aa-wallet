@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit'
 import {
   WalletConnectSidebar,
@@ -11,8 +11,7 @@ import { CustomConnectButtonProps } from '@/types'
 
 const CustomConnectButton: React.FC<CustomConnectButtonProps> = ({ mode }) => {
   const { isWalletPanel, setIsWalletPanel } = useContext(SendUserOpContext)!
-  const { AAaddress } = useSignature()
-  const [isConnected, setIsConnected] = useState(false)
+  const { AAaddress, isConnected } = useSignature()
 
   useEffect(() => {
     if (!isConnected) {
@@ -35,10 +34,6 @@ const CustomConnectButton: React.FC<CustomConnectButtonProps> = ({ mode }) => {
               chain &&
               (!authenticationStatus || authenticationStatus === 'authenticated'),
           )
-
-          if (isConnected !== connected) {
-            setIsConnected(connected)
-          }
 
           if (!ready) return null
           if (chain?.unsupported) {

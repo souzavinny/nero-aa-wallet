@@ -12,7 +12,7 @@ import {
 
 export const PaymasterContext = createContext<PaymasterContextType | undefined>(undefined)
 
-export const PaymasterProvider: React.FC<ProviderProps> = ({ children, onError }) => {
+export const PaymasterProvider: React.FC<ProviderProps> = ({ children }) => {
   const [paymaster, setPaymaster] = useState(false)
   const [selectedToken, setSelectedToken] = useState<string | null>(null)
   const [supportedTokens, setSupportedTokens] = useState<PaymasterToken[]>([])
@@ -101,7 +101,6 @@ export const PaymasterProvider: React.FC<ProviderProps> = ({ children, onError }
         clearToken,
         isPaymentSelected,
         setIsPaymentSelected,
-        onError,
       }}
     >
       {children}

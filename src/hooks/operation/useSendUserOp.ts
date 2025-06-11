@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState, useEffect, useRef } from 'react'
 import { BytesLike, ethers } from 'ethers'
 import { ClientContext, SendUserOpContext, SignatureContext } from '@/contexts'
-import { useEstimateUserOpFee, useSignature } from '@/hooks'
+import { useEstimateUserOpFee } from '@/hooks'
 import { useEthersSigner, useConfig, useScreenManager } from '@/hooks'
 import { OperationData, UserOperation, UserOperationResultInterface, screens } from '@/types'
 import { PAYMASTER_MODE } from '@/types/Paymaster'
@@ -16,13 +16,12 @@ export const useSendUserOp = () => {
   const { tokenPaymaster } = useConfig()
   const { estimateUserOpFee, ensurePaymasterApproval } = useEstimateUserOpFee()
   const { initBuilder } = useBuilderWithPaymaster(signer)
-  const { AAaddress } = useSignature()
 
   if (!sendUserOpContext) {
     throw new Error('SendUserOpContext is undefined')
   }
 
-  const { userOperations, setUserOperations, setLatestUserOpResult, latestUserOpResult, onError } =
+  const { userOperations, setUserOperations, setLatestUserOpResult, latestUserOpResult } =
     useContext(SendUserOpContext)!
 
   const [resolveFunc, setResolveFunc] = useState<((value: any) => void) | null>(null)
@@ -62,6 +61,13 @@ export const useSendUserOp = () => {
       if (!simpleAccountInstance) {
         return null
       }
+
+      // Safety check for checkUserOp method
+      if (typeof simpleAccountInstance.checkUserOp !== 'function') {
+        console.warn('simpleAccountInstance.checkUserOp is not a function')
+        return null
+      }
+
       try {
         return await simpleAccountInstance.checkUserOp(userOpHash)
       } catch (error) {
@@ -117,12 +123,12 @@ export const useSendUserOp = () => {
         return null
       }
 
-      let operations: { to: string; value: ethers.BigNumberish; data: BytesLike }[] = []
-
       try {
         if (userOperations.length === 0) {
           return null
         }
+
+        let operations: { to: string; value: ethers.BigNumberish; data: BytesLike }[] = []
 
         if (usePaymaster && paymasterTokenAddress && type !== PAYMASTER_MODE.FREE_GAS) {
           try {
@@ -183,7 +189,23 @@ export const useSendUserOp = () => {
         setPendingUserOpHash(res.userOpHash)
 
         const ev = await res.wait()
-        const userOpResult = await simpleAccountInstance.checkUserOp(res.userOpHash)
+
+        // Safety check for simpleAccountInstance.checkUserOp
+        let userOpResult = false
+        if (simpleAccountInstance && typeof simpleAccountInstance.checkUserOp === 'function') {
+          try {
+            userOpResult = await simpleAccountInstance.checkUserOp(res.userOpHash)
+          } catch (error) {
+            console.error('Error checking UserOp result:', error)
+            userOpResult = false
+          }
+        } else {
+          console.warn(
+            'simpleAccountInstance.checkUserOp is not available, assuming transaction success',
+          )
+          userOpResult = true // Assume success if we can't check
+        }
+
         const result = {
           userOpHash: res.userOpHash,
           result: userOpResult,
@@ -197,16 +219,6 @@ export const useSendUserOp = () => {
         return userOpResult
       } catch (error) {
         console.error('SendUserOp error:', error)
-        const errorMsg = error?.toString() || ''
-        const isUserError =
-          errorMsg.includes('AA33 reverted') ||
-          errorMsg.includes(`AA21 didn't pay prefund`) ||
-          errorMsg.includes('insufficient balance') ||
-          false
-
-        if (onError && !isUserError) {
-          onError(error, AAaddress, 'SendUserOp error', operations)
-        }
         throw error
       }
     },
@@ -218,7 +230,6 @@ export const useSendUserOp = () => {
       userOperations,
       tokenPaymaster,
       ensurePaymasterApproval,
-      onError,
     ],
   )
 

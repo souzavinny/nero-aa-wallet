@@ -1,7 +1,6 @@
 import React, { createContext, useContext } from 'react'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 import { metaMaskWallet, bitgetWallet, gateWallet } from '@rainbow-me/rainbowkit/wallets'
-import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 import { defineChain } from 'viem'
 import { http, WagmiProvider } from 'wagmi'
 import { rainbowWeb3AuthConnector } from '@/config/rainbowWeb3authConnector'
@@ -70,7 +69,7 @@ export const WrapWagmiProvider: React.FC<WrapWagmiContextProps> = ({ children })
     chain: neroChain,
     walletConfig: {
       name: walletName,
-      networkType: networkType as WEB3AUTH_NETWORK_TYPE,
+      networkType: networkType,
       logo: walletLogo,
       walletBackground,
       clientId,

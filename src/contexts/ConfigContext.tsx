@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useState } from 'react'
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 import { ConfigContextProps, ConfigProviderProps } from '@/types'
 
 export const ConfigContext = createContext<ConfigContextProps | undefined>(undefined)
@@ -63,7 +64,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children, config
       value={{
         projectId: config.rainbowKitProjectId,
         rpcUrl,
-        networkType,
+        networkType: networkType as WEB3AUTH_NETWORK_TYPE,
         paymasterUrl,
         paymasterApi,
         walletName: config.walletName,

@@ -1,4 +1,5 @@
 import NEROLogoSquareIcon from './src/assets/NERO-Logo-square.svg'
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base'
 
 const config = {
   rainbowKitProjectId: '04309ed1007e77d1f119b85205bb779d',
@@ -13,7 +14,7 @@ const config = {
       chain: {
         name: 'NERO Testnet',
         logo: NEROLogoSquareIcon,
-        networkType: 'testnet',
+        networkType: 'sapphire_devnet' as WEB3AUTH_NETWORK_TYPE,
         rpc: 'https://rpc-testnet.nerochain.io',
         chainId: 689,
         explorer: 'https://testnet.neroscan.io',

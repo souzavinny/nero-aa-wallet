@@ -234,7 +234,12 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onClose, onCre
                     </span>
                   </div>
                   <div className='min-w-0 flex-1'>
-                    <p className='font-medium text-gray-800 truncate max-w-[180px]' title={account.name}>{account.name}</p>
+                    <p
+                      className='font-medium text-gray-800 truncate max-w-[180px]'
+                      title={account.name}
+                    >
+                      {account.name}
+                    </p>
                     <p className='text-sm text-gray-500'>{formatAddress(account.AAaddress)}</p>
                     <p className='text-xs text-gray-400'>Salt: {account.salt}</p>
                   </div>
@@ -295,7 +300,12 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onClose, onCre
                         </span>
                       </div>
                       <div className='min-w-0 flex-1'>
-                        <p className='font-medium text-gray-600 text-sm truncate max-w-[150px]' title={account.name}>{account.name}</p>
+                        <p
+                          className='font-medium text-gray-600 text-sm truncate max-w-[150px]'
+                          title={account.name}
+                        >
+                          {account.name}
+                        </p>
                         <p className='text-xs text-gray-500'>{formatAddress(account.AAaddress)}</p>
                       </div>
                     </div>

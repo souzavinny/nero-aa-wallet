@@ -118,7 +118,14 @@ export const AccountSelector: React.FC = () => {
               <div className='flex flex-col items-start min-w-0 flex-1'>
                 {/* Account Name */}
                 <div className='flex items-center space-x-2 w-full min-w-0'>
-                  <span className='text-base font-semibold text-gray-900 truncate max-w-[180px]' title={isCreatingAccount ? 'Creating Account...' : activeAccount?.name || 'No Account'}>
+                  <span
+                    className='text-base font-semibold text-gray-900 truncate max-w-[180px]'
+                    title={
+                      isCreatingAccount
+                        ? 'Creating Account...'
+                        : activeAccount?.name || 'No Account'
+                    }
+                  >
                     {isCreatingAccount
                       ? 'Creating Account...'
                       : activeAccount?.name || 'No Account'}

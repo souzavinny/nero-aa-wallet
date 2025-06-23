@@ -190,7 +190,10 @@ export const ConsolidationProgressModal: React.FC<ConsolidationProgressModalProp
           <div className='space-y-2 sm:space-y-4 max-h-48 sm:max-h-96 overflow-y-auto'>
             {consolidationProgress.map((account) => (
               <div key={account.accountId} className='border border-gray-200 rounded-lg p-2 sm:p-4'>
-                <h3 className='font-medium text-text-primary mb-1 sm:mb-3 text-xs sm:text-base truncate max-w-[200px] sm:max-w-[300px]' title={account.accountName}>
+                <h3
+                  className='font-medium text-text-primary mb-1 sm:mb-3 text-xs sm:text-base truncate max-w-[200px] sm:max-w-[300px]'
+                  title={account.accountName}
+                >
                   {account.accountName}
                 </h3>
 

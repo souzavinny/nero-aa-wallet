@@ -99,8 +99,8 @@ export const ConsolidationPreviewModal: React.FC<ConsolidationPreviewModalProps>
               <div className='text-sm text-green-700 space-y-1'>
                 <p>• Automatically consolidate all funds</p>
                 <p>• All transfers executed automatically</p>
-                <p>• ERC20 tokens transferred first, then ETH</p>
-                <p>• ETH (0.001) reserved for gas fees</p>
+                <p>• ERC20 tokens transferred first, then $NERO</p>
+                <p>• $NERO (0.001) reserved for gas fees</p>
                 <p>• Monitor progress in real-time</p>
               </div>
             </div>
@@ -150,9 +150,9 @@ export const ConsolidationPreviewModal: React.FC<ConsolidationPreviewModalProps>
                           ethers.utils.parseEther('0.001'),
                         ) && (
                           <div className='flex justify-between text-xs'>
-                            <span className='text-gray-600'>ETH</span>
+                            <span className='text-gray-600'>$NERO</span>
                             <span className='font-mono'>
-                              {formatEthBalance(account.nativeBalance)} ETH
+                              {formatEthBalance(account.nativeBalance)} $NERO
                             </span>
                           </div>
                         )}
@@ -185,7 +185,7 @@ export const ConsolidationPreviewModal: React.FC<ConsolidationPreviewModalProps>
               </div>
               <div className='flex justify-between sm:block'>
                 <span className='text-gray-600'>Estimated Gas:</span>
-                <span className='font-medium sm:ml-2'>{plan.estimatedGasNeeded} ETH</span>
+                <span className='font-medium sm:ml-2'>{plan.estimatedGasNeeded} $NERO</span>
               </div>
             </div>
           </div>

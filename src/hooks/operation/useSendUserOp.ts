@@ -2,7 +2,7 @@ import { useCallback, useContext, useState, useEffect, useRef } from 'react'
 import { BytesLike, ethers } from 'ethers'
 import { ClientContext, SendUserOpContext, SignatureContext } from '@/contexts'
 import { useEstimateUserOpFee } from '@/hooks'
-import { useEthersSigner, useScreenManager } from '@/hooks'
+import { useEthersSigner, useConfig, useScreenManager } from '@/hooks'
 import { OperationData, UserOperation, UserOperationResultInterface, screens } from '@/types'
 import { PAYMASTER_MODE } from '@/types/Paymaster'
 import { useBuilderWithPaymaster } from '@/utils'
@@ -13,7 +13,7 @@ export const useSendUserOp = () => {
   const signer = useEthersSigner()
   const client = useContext(ClientContext)
   const { simpleAccountInstance } = useContext(SignatureContext)!
-
+  const { tokenPaymaster } = useConfig()
   const { estimateUserOpFee, ensurePaymasterApproval } = useEstimateUserOpFee()
   const { initBuilder } = useBuilderWithPaymaster(signer)
 
@@ -35,7 +35,7 @@ export const useSendUserOp = () => {
       resolveFunc(latestUserOpResult)
       setResolveFunc(null)
     }
-  }, [latestUserOpResult, resolveFunc, currentScreen])
+  }, [latestUserOpResult, currentScreen])
 
   const waitForUserOpResult = useCallback(
     (): Promise<UserOperationResultInterface> =>
@@ -53,7 +53,7 @@ export const useSendUserOp = () => {
           setResolveFunc(() => resolve)
         }
       }),
-    [pendingUserOpHash],
+    [latestUserOpResult, pendingUserOpHash],
   )
 
   const checkUserOpStatus = useCallback(
@@ -97,31 +97,25 @@ export const useSendUserOp = () => {
     [estimateUserOpFee, userOperations],
   )
 
-  const execute = useCallback(
-    async (operation: UserOperation) => {
-      resultRef.current = null
-      setLatestUserOpResult(null)
-      setUserOperations([operation])
-      sendUserOpContext?.forceOpenPanel()
-      if (currentScreen !== screens.SENDUSEROP) {
-        navigateTo(screens.SENDUSEROP)
-      }
-    },
-    [currentScreen, navigateTo, sendUserOpContext, setLatestUserOpResult, setUserOperations],
-  )
+  const execute = useCallback(async (operation: UserOperation) => {
+    resultRef.current = null
+    setLatestUserOpResult(null)
+    setUserOperations([operation])
+    sendUserOpContext?.forceOpenPanel()
+    if (currentScreen !== screens.SENDUSEROP) {
+      navigateTo(screens.SENDUSEROP)
+    }
+  }, [])
 
-  const executeBatch = useCallback(
-    async (operations: UserOperation[]) => {
-      resultRef.current = null
-      setLatestUserOpResult(null)
-      setUserOperations(operations)
-      sendUserOpContext?.forceOpenPanel()
-      if (currentScreen !== screens.SENDUSEROP) {
-        navigateTo(screens.SENDUSEROP)
-      }
-    },
-    [currentScreen, navigateTo, sendUserOpContext, setLatestUserOpResult, setUserOperations],
-  )
+  const executeBatch = useCallback(async (operations: UserOperation[]) => {
+    resultRef.current = null
+    setLatestUserOpResult(null)
+    setUserOperations(operations)
+    sendUserOpContext?.forceOpenPanel()
+    if (currentScreen !== screens.SENDUSEROP) {
+      navigateTo(screens.SENDUSEROP)
+    }
+  }, [])
 
   const sendUserOp = useCallback(
     async (usePaymaster: boolean = false, paymasterTokenAddress?: string, type: number = 0) => {
@@ -234,9 +228,8 @@ export const useSendUserOp = () => {
       simpleAccountInstance,
       initBuilder,
       userOperations,
+      tokenPaymaster,
       ensurePaymasterApproval,
-      setLatestUserOpResult,
-      setUserOperations,
     ],
   )
 

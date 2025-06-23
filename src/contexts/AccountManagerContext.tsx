@@ -1,10 +1,16 @@
 import React, { createContext, useCallback, useEffect, useState, useRef, useMemo } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 import { getPaymaster } from '@/helper/getPaymaster'
 import { SimpleAccount } from '@/helper/simpleAccount'
 import { useEthersSigner, useConfig } from '@/hooks'
 import { AccountManagerContextProps, AccountData, ProviderProps } from '@/types'
-import { generateDeterministicSalt, generateStorageKeys } from '@/utils/security'
+import { ethers } from 'ethers'
+import {
+  generateDeterministicSalt,
+  generateStorageKeys,
+  validateAccountData,
+  sanitizeAccountName,
+} from '@/utils/security'
 
 export const AccountManagerContext = createContext<AccountManagerContextProps | undefined>(
   undefined,
@@ -25,8 +31,8 @@ interface AuthInfo {
   walletName?: string
 }
 
-// const STORAGE_KEY = 'nero-wallet-accounts'
-// const ACTIVE_ACCOUNT_KEY = 'nero-wallet-active-account'
+const STORAGE_KEY = 'nero-wallet-accounts'
+const ACTIVE_ACCOUNT_KEY = 'nero-wallet-active-account'
 
 export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) => {
   const { rpcUrl, bundlerUrl, entryPoint, accountFactory, chainId } = useConfig()
@@ -76,7 +82,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         const web3authUserInfo = await (connector as any)?.web3AuthInstance?.getUserInfo?.()
 
         if (web3authUserInfo) {
-          const { typeOfLogin, email, name } = web3authUserInfo
+          const { typeOfLogin, email, name, profileImage } = web3authUserInfo
 
           switch (typeOfLogin?.toLowerCase()) {
             case 'google':
@@ -139,7 +145,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         authInfo,
       }
     } catch (error) {
-      console.warn('Error generating storage keys:', error)
+      console.error('Error generating storage keys:', error)
       return null
     }
   }, [signer, detectAuthInfo])
@@ -174,11 +180,11 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         const authChanged = hasAuthChanged(authInfo)
 
         if (signerChanged || authChanged) {
-          console.warn(`🔐 Authentication context changed:`)
-          console.warn(`  - Signer: ${currentSignerAddress.current} → ${signerAddress}`)
-          console.warn(`  - Auth Method: ${currentAuthInfo.current?.method} → ${authInfo.method}`)
-          console.warn(`  - User ID: ${currentAuthInfo.current?.userId} → ${authInfo.userId}`)
-          console.warn(`  - Wallet Name: ${authInfo.walletName}`)
+          console.log(`🔐 Authentication context changed:`)
+          console.log(`  - Signer: ${currentSignerAddress.current} → ${signerAddress}`)
+          console.log(`  - Auth Method: ${currentAuthInfo.current?.method} → ${authInfo.method}`)
+          console.log(`  - User ID: ${currentAuthInfo.current?.userId} → ${authInfo.userId}`)
+          console.log(`  - Wallet Name: ${authInfo.walletName}`)
 
           // Clear current state
           setAccounts([])
@@ -224,28 +230,24 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
                   setActiveAccountId(validAccounts[0].id)
                 }
 
-                console.warn(
-                  `📂 Loaded ${validAccounts.length} accounts for ${authInfo.walletName}`,
-                )
+                console.log(`📂 Loaded ${validAccounts.length} accounts for ${authInfo.walletName}`)
               } catch (error) {
-                console.warn('Error loading accounts from storage:', error)
+                console.error('Error loading accounts from storage:', error)
               }
             } else {
-              console.warn(`📂 No existing accounts found for ${authInfo.walletName}`)
+              console.log(`📂 No existing accounts found for ${authInfo.walletName}`)
             }
           }
 
           hasInitialized.current = true
         }
       } catch (error) {
-        console.warn('Error handling auth change:', error)
+        console.error('Error handling authentication change:', error)
       }
     }
 
-    if (isWalletConnected) {
-      handleAuthChange()
-    }
-  }, [signer, isWalletConnected, detectAuthInfo, hasAuthChanged, getStorageKeys])
+    handleAuthChange()
+  }, [signer, detectAuthInfo, hasAuthChanged, getStorageKeys])
 
   // Save accounts to localStorage whenever they change (using auth-specific key)
   useEffect(() => {
@@ -468,24 +470,46 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     [activeAccountId, accounts, signer, loading, isCreatingAccount, initializeSimpleAccount],
   )
 
+  // Helper function to regenerate deterministic salt for existing account at specific index
+  const regenerateAccountWithDeterministicSalt = useCallback(
+    async (accountIndex: number) => {
+      if (!signer) return null
+
+      try {
+        const salt = await generateDeterministicSaltForContext(accountIndex)
+        const { simpleAccount, address } = await initializeSimpleAccount(salt)
+
+        return {
+          salt,
+          address,
+          simpleAccountInstance: simpleAccount,
+        }
+      } catch (error) {
+        console.error('Error regenerating account with deterministic salt:', error)
+        return null
+      }
+    },
+    [signer, generateDeterministicSaltForContext, initializeSimpleAccount],
+  )
+
   // 🔄 ACCOUNT RECOVERY SYSTEM
   const recoverAccountByIndex = useCallback(
     async (accountIndex: number, accountName?: string) => {
       if (!signer) {
-        console.warn('Signer is not available for recovery')
+        console.error('Signer is not available for recovery')
         return null
       }
 
       try {
-        console.warn(`🔄 Starting account recovery for index ${accountIndex}...`)
+        console.log(`🔄 Starting account recovery for index ${accountIndex}...`)
 
         // Generate the same deterministic salt that would be used for this index
         const salt = await generateDeterministicSaltForContext(accountIndex)
-        console.warn(`🔍 Generated deterministic salt: ${salt}`)
+        console.log(`🔍 Generated deterministic salt: ${salt}`)
 
         // Initialize the AA account with the same parameters
         const { simpleAccount, address } = await initializeSimpleAccount(salt)
-        console.warn(`🏭 Recovered AA address: ${address}`)
+        console.log(`🏭 Recovered AA address: ${address}`)
 
         // Check if this account already exists in our local storage
         const existingAccount = accounts.find(
@@ -493,7 +517,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         )
 
         if (existingAccount) {
-          console.warn(`✅ Account already exists: ${existingAccount.name}`)
+          console.log(`✅ Account already exists: ${existingAccount.name}`)
           return existingAccount
         }
 
@@ -512,10 +536,10 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         setAccounts((prev) => [...prev, recoveredAccount])
         setActiveAccountId(accountId)
 
-        console.warn(`✅ Successfully recovered account: ${recoveredAccount.name} (${address})`)
+        console.log(`✅ Successfully recovered account: ${recoveredAccount.name} (${address})`)
         return recoveredAccount
       } catch (error) {
-        console.warn(`❌ Failed to recover account at index ${accountIndex}:`, error)
+        console.error(`❌ Failed to recover account at index ${accountIndex}:`, error)
         return null
       }
     },
@@ -532,11 +556,11 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
   const discoverAccounts = useCallback(
     async (maxIndex: number = 10) => {
       if (!signer) {
-        console.warn('Signer is not available for discovery')
+        console.error('Signer is not available for discovery')
         return []
       }
 
-      console.warn(`🔍 Starting account discovery (checking indices 0-${maxIndex})...`)
+      console.log(`🔍 Starting account discovery (checking indices 0-${maxIndex})...`)
       const discoveredAccounts: Array<{ index: number; address: string; salt: number }> = []
 
       for (let i = 0; i <= maxIndex; i++) {
@@ -552,13 +576,13 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
             salt,
           })
 
-          console.warn(`  Index ${i}: ${address} (salt: ${salt})`)
+          console.log(`  Index ${i}: ${address} (salt: ${salt})`)
         } catch (error) {
           console.warn(`Failed to generate account at index ${i}:`, error)
         }
       }
 
-      console.warn(
+      console.log(
         `🔍 Account discovery complete. Found ${discoveredAccounts.length} potential accounts.`,
       )
       return discoveredAccounts
@@ -586,40 +610,40 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         storageKey: (await getStorageKeys())?.accountsKey,
       }
     } catch (error) {
-      console.warn('Error getting recovery info:', error)
+      console.error('Error getting recovery info:', error)
       return null
     }
   }, [signer, detectAuthInfo, chainId, accountFactory, entryPoint, accounts.length, getStorageKeys])
 
   // 🧪 DEMO RECOVERY FUNCTIONS (for testing/demonstration)
   const demoRecoveryScenario = useCallback(async () => {
-    console.warn('\n🧪 === ACCOUNT RECOVERY DEMONSTRATION ===')
+    console.log('\n🧪 === ACCOUNT RECOVERY DEMONSTRATION ===')
 
     const recoveryInfo = await getRecoveryInfo()
     if (!recoveryInfo) {
-      console.warn('❌ Cannot demonstrate recovery - no signer available')
+      console.log('❌ Cannot demonstrate recovery - no signer available')
       return
     }
 
-    console.warn('📋 Recovery Parameters:')
-    console.warn(`  • EOA Address: ${recoveryInfo.signerAddress}`)
-    console.warn(`  • Auth Method: ${recoveryInfo.authMethod}`)
-    console.warn(`  • Chain ID: ${recoveryInfo.chainId}`)
-    console.warn(`  • Account Factory: ${recoveryInfo.accountFactory}`)
-    console.warn(`  • Entry Point: ${recoveryInfo.entryPoint}`)
-    console.warn(`  • Current Accounts: ${recoveryInfo.currentAccountCount}`)
+    console.log('📋 Recovery Parameters:')
+    console.log(`  • EOA Address: ${recoveryInfo.signerAddress}`)
+    console.log(`  • Auth Method: ${recoveryInfo.authMethod}`)
+    console.log(`  • Chain ID: ${recoveryInfo.chainId}`)
+    console.log(`  • Account Factory: ${recoveryInfo.accountFactory}`)
+    console.log(`  • Entry Point: ${recoveryInfo.entryPoint}`)
+    console.log(`  • Current Accounts: ${recoveryInfo.currentAccountCount}`)
 
-    console.warn('\n🔍 Demonstrating deterministic address generation:')
+    console.log('\n🔍 Demonstrating deterministic address generation:')
     await discoverAccounts(5)
 
-    console.warn('\n💡 Key Points:')
-    console.warn('  1. With the same EOA + Factory + Salt → Same AA Address')
-    console.warn('  2. Account recovery = regenerating AA address from known parameters')
-    console.warn('  3. No private keys needed for AA accounts - only for the controlling EOA')
-    console.warn('  4. Each account index produces a deterministic salt')
-    console.warn('  5. Different auth methods create separate account universes')
+    console.log('\n💡 Key Points:')
+    console.log('  1. With the same EOA + Factory + Salt → Same AA Address')
+    console.log('  2. Account recovery = regenerating AA address from known parameters')
+    console.log('  3. No private keys needed for AA accounts - only for the controlling EOA')
+    console.log('  4. Each account index produces a deterministic salt')
+    console.log('  5. Different auth methods create separate account universes')
 
-    console.warn('\n🧪 === END DEMONSTRATION ===\n')
+    console.log('\n🧪 === END DEMONSTRATION ===\n')
   }, [getRecoveryInfo, discoverAccounts])
 
   // Create first account if no accounts exist and wallet is connected
@@ -638,7 +662,14 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     ) {
       createAccount('Account 1')
     }
-  }, [isWalletConnected, signer, visibleAccounts.length, isCreatingAccount, createAccount])
+  }, [
+    hasInitialized.current,
+    isWalletConnected,
+    signer,
+    visibleAccounts.length,
+    isCreatingAccount,
+    createAccount,
+  ])
 
   const activeAccount = accounts.find((acc) => acc.id === activeAccountId) || null
 

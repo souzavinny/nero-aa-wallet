@@ -68,7 +68,7 @@ export const ConsolidationPreviewModal: React.FC<ConsolidationPreviewModalProps>
                 <span className='text-sm font-medium text-blue-800'>Destination Account</span>
               </div>
               <p className='text-sm text-blue-700 break-all'>
-                <strong>{plan.toAccount.name}</strong> ({formatAddress(plan.toAccount.AAaddress)})
+                <strong className='truncate max-w-[200px] inline-block align-bottom' title={plan.toAccount.name}>{plan.toAccount.name}</strong> ({formatAddress(plan.toAccount.AAaddress)})
               </p>
             </div>
 
@@ -127,10 +127,10 @@ export const ConsolidationPreviewModal: React.FC<ConsolidationPreviewModalProps>
                       className='border border-gray-200 rounded-lg p-2 sm:p-3'
                     >
                       <div className='flex items-center justify-between mb-1 sm:mb-2'>
-                        <span className='font-medium text-text-primary text-xs sm:text-sm truncate flex-1'>
+                        <span className='font-medium text-text-primary text-xs sm:text-sm truncate max-w-[120px] sm:max-w-[180px]' title={account.accountName}>
                           {account.accountName}
                         </span>
-                        <span className='text-xs text-gray-500 ml-1 sm:ml-2 font-mono'>
+                        <span className='text-xs text-gray-500 ml-1 sm:ml-2 font-mono flex-shrink-0'>
                           {formatAddress(account.AAaddress)}
                         </span>
                       </div>

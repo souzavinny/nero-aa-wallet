@@ -262,7 +262,7 @@ const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
                   </div>
 
                   {/* Account Name */}
-                  <span className='text-sm font-medium text-text-primary truncate'>
+                  <span className='text-sm font-medium text-text-primary truncate max-w-[120px]' title={isCreatingAccount ? 'Creating...' : activeAccount?.name || 'No Account'}>
                     {isCreatingAccount ? 'Creating...' : activeAccount?.name || 'No Account'}
                   </span>
                 </div>

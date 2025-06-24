@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 import { BytesLike, ethers } from 'ethers'
 import { erc20Abi } from 'viem'
-import { ClientContext, SendUserOpContext, SignatureContext } from '@/contexts'
+import { ClientContext, SignatureContext } from '@/contexts'
 import { useEthersSigner, usePaymasterContext, useSignature } from '@/hooks'
 import { useConfig } from '@/hooks'
 import { OperationData } from '@/types/hooks'
@@ -23,8 +23,6 @@ export const useEstimateUserOpFee = () => {
   const { supportedTokens } = usePaymasterContext()
   const { initBuilder } = useBuilderWithPaymaster(signer)
   const { tokenPaymaster } = useConfig()
-
-  const { onError } = useContext(SendUserOpContext)!
 
   /**
    * allowanceを確認する関数
@@ -204,23 +202,13 @@ export const useEstimateUserOpFee = () => {
             }
           }
         }
+
         return ethers.utils.formatEther(totalFeeWei)
       } catch (error) {
-        if (onError) {
-          onError(error, AAaddress, 'EstimateUserOpFee error')
-        }
         return TOKEN_CONFIG.FALLBACK_GAS_ESTIMATE
       }
     },
-    [
-      signer,
-      client,
-      simpleAccountInstance,
-      initBuilder,
-      supportedTokens,
-      tokenPaymaster,
-      ensurePaymasterApproval,
-    ],
+    [signer, client, simpleAccountInstance, initBuilder, supportedTokens, ensurePaymasterApproval],
   )
 
   return { estimateUserOpFee, ensurePaymasterApproval }

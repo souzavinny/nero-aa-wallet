@@ -8,7 +8,7 @@ import {
 
 export const SendUserOpContext = createContext<SendUserOpContextProps | undefined>(undefined)
 
-export const SendUserOpProvider: React.FC<ProviderProps> = ({ children, onError }) => {
+export const SendUserOpProvider: React.FC<ProviderProps> = ({ children }) => {
   const [paymaster, setPaymaster] = useState(false)
   const [userOperations, setUserOperations] = useState<UserOperation[]>([])
   const [latestUserOpResult, setLatestUserOpResult] = useState<UserOperationResultInterface | null>(
@@ -37,7 +37,6 @@ export const SendUserOpProvider: React.FC<ProviderProps> = ({ children, onError 
         isWalletPanel,
         setIsWalletPanel,
         forceOpenPanel,
-        onError,
       }}
     >
       {children}

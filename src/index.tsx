@@ -2,9 +2,9 @@
 import React from 'react'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BytesLike, ethers } from 'ethers'
 import App from '@/App'
 import {
+  AccountManagerProvider,
   ClientProvider,
   ConfigProvider,
   MultiSendProvider,
@@ -18,6 +18,7 @@ import {
   TransactionProvider,
   WrapWagmiProvider,
 } from '@/contexts'
+import { AccountConsolidationProvider } from '@/contexts/AccountConsolidationContext'
 import { useSignature, useAAtransfer, useSendUserOp, useConfig } from '@/hooks'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@/index.css'
@@ -28,12 +29,6 @@ interface SocialWalletProps {
   zIndex?: number
   children?: React.ReactNode
   mode?: 'sidebar' | 'button'
-  onError?: (
-    error: any,
-    aaAddress?: string,
-    title?: string,
-    operations?: { to: string; value: ethers.BigNumberish; data: BytesLike }[],
-  ) => void
 }
 
 export const SocialWallet: React.FC<SocialWalletProps> = ({
@@ -41,7 +36,6 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
   zIndex = 9999,
   children,
   mode = 'sidebar',
-  onError = undefined,
 }) => {
   const queryClient = new QueryClient()
 
@@ -50,30 +44,34 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
       <WrapWagmiProvider>
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider modalSize='compact'>
-            <SignatureProvider>
-              <ScreenManagerProvider>
-                <PaymasterProvider onError={onError}>
-                  <TokenProvider>
-                    <NFTProvider>
-                      <SendProvider>
-                        <MultiSendProvider>
-                          <ClientProvider>
-                            <SendUserOpProvider onError={onError}>
-                              <TransactionProvider>
-                                {children}
-                                <div style={{ position: 'relative', zIndex: zIndex }}>
-                                  <App mode={mode} />
-                                </div>
-                              </TransactionProvider>
-                            </SendUserOpProvider>
-                          </ClientProvider>
-                        </MultiSendProvider>
-                      </SendProvider>
-                    </NFTProvider>
-                  </TokenProvider>
-                </PaymasterProvider>
-              </ScreenManagerProvider>
-            </SignatureProvider>
+            <AccountManagerProvider>
+              <SignatureProvider>
+                <ScreenManagerProvider>
+                  <PaymasterProvider>
+                    <TokenProvider>
+                      <NFTProvider>
+                        <SendProvider>
+                          <MultiSendProvider>
+                            <ClientProvider>
+                              <AccountConsolidationProvider>
+                                <SendUserOpProvider>
+                                  <TransactionProvider>
+                                    {children}
+                                    <div style={{ position: 'relative', zIndex: zIndex }}>
+                                      <App mode={mode} />
+                                    </div>
+                                  </TransactionProvider>
+                                </SendUserOpProvider>
+                              </AccountConsolidationProvider>
+                            </ClientProvider>
+                          </MultiSendProvider>
+                        </SendProvider>
+                      </NFTProvider>
+                    </TokenProvider>
+                  </PaymasterProvider>
+                </ScreenManagerProvider>
+              </SignatureProvider>
+            </AccountManagerProvider>
           </RainbowKitProvider>
         </QueryClientProvider>
       </WrapWagmiProvider>

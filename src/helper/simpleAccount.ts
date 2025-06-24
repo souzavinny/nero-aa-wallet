@@ -15,7 +15,7 @@ import type { BigNumberish, BytesLike } from 'ethers'
 import type { IPresetBuilderOpts, UserOperationMiddlewareFn } from 'userop'
 import { ERC20_ABI, ERC721_ABI } from '@/constants/abi'
 
-const { getGasPrice, estimateUserOperationGas, EOASignature } = Presets.Middleware
+const { getGasPrice, estimateUserOperationGas, signUserOpHash } = Presets.Middleware
 
 export class SimpleAccount extends UserOperationBuilder {
   private signer: ethers.Signer
@@ -54,13 +54,14 @@ export class SimpleAccount extends UserOperationBuilder {
     const instance = new SimpleAccount(signer, rpcUrl, opts)
 
     const address = await instance.signer.getAddress()
+    const saltValue = opts?.salt ?? 0
 
     try {
       instance.initCode = await ethers.utils.hexConcat([
         instance.factory.address,
         instance.factory.interface.encodeFunctionData('createAccount', [
           address,
-          ethers.BigNumber.from(opts?.salt ?? 0),
+          ethers.BigNumber.from(saltValue),
         ]),
       ])
 
@@ -68,6 +69,7 @@ export class SimpleAccount extends UserOperationBuilder {
       throw new Error('getSenderAddress: unexpected result')
     } catch (error: any) {
       const addr = error?.errorArgs?.sender
+
       if (!addr) {
         throw error
       }
@@ -89,7 +91,7 @@ export class SimpleAccount extends UserOperationBuilder {
       ? base.useMiddleware(opts.paymasterMiddleware)
       : base.useMiddleware(estimateUserOperationGas(instance.provider))
 
-    return withPM.useMiddleware(EOASignature(instance.signer))
+    return withPM.useMiddleware(signUserOpHash(instance.signer))
   }
 
   async checkUserOp(opHash: string) {

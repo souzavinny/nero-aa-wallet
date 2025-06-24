@@ -1,16 +1,12 @@
 import { ReactNode } from 'react';
-import { ContractInterface, BigNumberish, ethers, BytesLike } from 'ethers';
+import { WEB3AUTH_NETWORK_TYPE } from '@web3auth/base';
+import { ContractInterface, BigNumberish } from 'ethers';
 import { Client, UserOperationMiddlewareFn } from 'userop';
 import { Presets } from 'userop';
 import { SimpleAccount } from '@/helper/simpleAccount';
 import { PaymasterToken, PaymasterData, PaymasterMode, PaymasterModeValue, SponsorshipInfo, NFTCardType, Screen, Token, WalletConfig } from '@/types';
 export interface ProviderProps {
     children: ReactNode;
-    onError?: (error: any, aaAddress?: string, title?: string, operations?: {
-        to: string;
-        value: ethers.BigNumberish;
-        data: BytesLike;
-    }[]) => void;
 }
 export interface BaseTransferContextType {
     recipientAddress: string;
@@ -79,7 +75,7 @@ export interface ConfigContextProps {
     explorerAPI: string;
     chainId: number;
     chainName: string;
-    networkType: string;
+    networkType: WEB3AUTH_NETWORK_TYPE;
     bundlerUrl: string;
     contactAs: string;
     PrivacyPolicy: string;
@@ -162,11 +158,6 @@ export interface PaymasterContextType {
     clearToken: () => void;
     isPaymentSelected: boolean;
     setIsPaymentSelected: (selected: boolean) => void;
-    onError?: (error: any, aaAddress?: string, title?: string, operations?: {
-        to: string;
-        value: ethers.BigNumberish;
-        data: BytesLike;
-    }[]) => void;
 }
 export interface UserOperation {
     function: string;
@@ -191,9 +182,98 @@ export interface SendUserOpContextProps {
     isWalletPanel: boolean;
     setIsWalletPanel: (value: boolean) => void;
     forceOpenPanel: () => void;
-    onError?: (error: any, aaAddress?: string, title?: string, operations?: {
-        to: string;
-        value: ethers.BigNumberish;
-        data: BytesLike;
-    }[]) => void;
+}
+export interface AccountData {
+    id: string;
+    name: string;
+    AAaddress: `0x${string}`;
+    salt: number;
+    simpleAccountInstance?: SimpleAccount;
+    createdAt: number;
+    hidden?: boolean;
+}
+export interface AccountDropdownProps {
+    onClose: () => void;
+    onCreateAccount: () => void;
+}
+export interface AccountManagerContextProps {
+    accounts: AccountData[];
+    visibleAccounts: AccountData[];
+    hiddenAccounts: AccountData[];
+    activeAccountId: string | null;
+    activeAccount: AccountData | null;
+    loading: boolean;
+    isCreatingAccount: boolean;
+    createAccount: (name?: string) => Promise<void>;
+    switchAccount: (accountId: string) => void;
+    updateAccountName: (accountId: string, name: string) => void;
+    hideAccount: (accountId: string) => void;
+    unhideAccount: (accountId: string) => void;
+    showHiddenAccounts: boolean;
+    setShowHiddenAccounts: (show: boolean) => void;
+    refreshActiveAccount: (pm?: 'token' | 'verifying' | 'legacy-token') => Promise<void>;
+    recoverAccountByIndex: (accountIndex: number, accountName?: string) => Promise<AccountData | null>;
+    discoverAccounts: (maxIndex?: number) => Promise<Array<{
+        index: number;
+        address: string;
+        salt: number;
+    }>>;
+    getRecoveryInfo: () => Promise<{
+        signerAddress: string;
+        authMethod: string;
+        userId?: string;
+        walletName?: string;
+        chainId: number;
+        accountFactory: string;
+        entryPoint: string;
+        currentAccountCount: number;
+        storageKey?: string;
+    } | null>;
+    demoRecoveryScenario: () => Promise<void>;
+}
+export interface TokenBalance {
+    token: Token;
+    balance: string;
+    formattedBalance: string;
+    valueInUSD?: string;
+}
+export interface AccountTokenBalances {
+    accountId: string;
+    accountName: string;
+    AAaddress: `0x${string}`;
+    nativeBalance: string;
+    tokenBalances: TokenBalance[];
+    totalValueUSD?: string;
+}
+export interface ConsolidationPlan {
+    fromAccounts: AccountTokenBalances[];
+    toAccount: AccountData;
+    totalTransfers: number;
+    estimatedGasNeeded: string;
+    canExecute: boolean;
+    warnings: string[];
+}
+export interface ConsolidationProgress {
+    accountId: string;
+    accountName: string;
+    transfers: {
+        tokenSymbol: string;
+        status: 'pending' | 'processing' | 'completed' | 'failed';
+        txHash?: string;
+        error?: string;
+    }[];
+}
+export interface AccountConsolidationContextProps {
+    isScanning: boolean;
+    isConsolidating: boolean;
+    consolidationPlan: ConsolidationPlan | null;
+    consolidationProgress: ConsolidationProgress[];
+    scanAccountBalances: () => Promise<void>;
+    executeConsolidation: () => Promise<void>;
+    clearConsolidation: () => void;
+    canConsolidate: boolean;
+    showConsolidationModal: 'none' | 'preview' | 'progress';
+    openPreviewModal: () => void;
+    openProgressModal: () => void;
+    closeConsolidationModals: () => boolean;
 }

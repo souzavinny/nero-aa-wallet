@@ -12,6 +12,8 @@ export const useBuilderWithPaymaster = (signer: ethers.Signer | undefined) => {
 
       const builder = await Presets.Builder.SimpleAccount.init(signer, config.rpcUrl, {
         overrideBundlerRpc: config.bundlerUrl,
+        entryPoint: config.entryPoint,
+        factory: config.accountFactory,
       })
 
       if (usePaymaster) {

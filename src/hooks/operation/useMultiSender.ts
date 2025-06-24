@@ -189,7 +189,21 @@ export const useMultiSender = () => {
       const res = await client.sendUserOperation(userOp)
       await res.wait()
 
-      const userOpResult = await simpleAccountInstance.checkUserOp(res.userOpHash)
+      // Safety check for simpleAccountInstance.checkUserOp
+      let userOpResult = false
+      if (simpleAccountInstance && typeof simpleAccountInstance.checkUserOp === 'function') {
+        try {
+          userOpResult = await simpleAccountInstance.checkUserOp(res.userOpHash)
+        } catch (error) {
+          console.error('Error checking UserOp result:', error)
+          userOpResult = false
+        }
+      } else {
+        console.warn(
+          'simpleAccountInstance.checkUserOp is not available, assuming transaction success',
+        )
+        userOpResult = true
+      }
 
       return { hash: res.userOpHash, receipt: userOpResult }
     },

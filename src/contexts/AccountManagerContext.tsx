@@ -5,6 +5,7 @@ import { SimpleAccount } from '@/helper/simpleAccount'
 import { useEthersSigner, useConfig } from '@/hooks'
 import { AccountManagerContextProps, AccountData, ProviderProps } from '@/types'
 import { generateDeterministicSalt, generateStorageKeys } from '@/utils/security'
+import { isLocalStorageNearFull } from '@/utils/localStorage'
 
 export const AccountManagerContext = createContext<AccountManagerContextProps | undefined>(
   undefined,
@@ -314,6 +315,14 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
 
       if (isCreatingAccount) {
         console.warn('Account creation already in progress')
+        return
+      }
+
+      // Check localStorage quota before proceeding
+      const storageCheck = isLocalStorageNearFull()
+      if (storageCheck.isFull) {
+        console.error('Cannot create account: localStorage is full')
+        alert(storageCheck.message || 'Storage is full. Please clear browser data to continue.')
         return
       }
 

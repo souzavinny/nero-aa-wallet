@@ -19,7 +19,7 @@
     "build": "ITE_USER_NODE_ENV=build tsc --project tsconfig.build.json && vite build --mode build",
     "build:demo": "vite build --mode demo",
     "build:env": "VITE_USER_NODE_ENV=build tsc --project tsconfig.build.json && vite build --mode build",
-    "test": "vitest run --reporter=verbose src/__tests__/security-core.test.ts src/__tests__/utils-security.test.ts",
+    "test": "vitest run --reporter=verbose src/__tests__/security-core.test.ts src/__tests__/utils-security.test.ts src/__tests__/storage-quota-component.test.ts",
     "test:watch": "vitest watch src/__tests__/security-core.test.ts src/__tests__/utils-security.test.ts",
     "test:coverage": "vitest run --coverage src/__tests__/security-core.test.ts src/__tests__/utils-security.test.ts",
     "test:security-core": "vitest run --reporter=verbose src/__tests__/security-core.test.ts",

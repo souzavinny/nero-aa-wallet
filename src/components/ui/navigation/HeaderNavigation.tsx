@@ -3,7 +3,11 @@ import { BsThreeDotsVertical } from 'react-icons/bs'
 import { IoArrowBackSharp, IoEarthOutline, IoChevronDown, IoCopy } from 'react-icons/io5'
 import { useAccount, useDisconnect } from 'wagmi'
 import NEROLogoSquareIcon from '@/assets/NERO-Logo-square-beta.svg'
-import { AccountDropdown, CreateAccountModal } from '@/components/features/AccountSelector'
+import {
+  AccountDropdown,
+  CreateAccountModal,
+  StorageWarningModal,
+} from '@/components/features/AccountSelector'
 import { ConfigContext } from '@/contexts'
 import { useScreenManager, useAccountManager } from '@/hooks'
 import { HeaderNavigationProps, screens } from '@/types'
@@ -32,6 +36,11 @@ const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isNetworkMenuOpen, setIsNetworkMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // Storage warning modal state
+  const [showStorageWarning, setShowStorageWarning] = useState(false)
+  const [storageWarningMessage, setStorageWarningMessage] = useState('')
+
   const networkMenuRef = useRef<HTMLDivElement>(null)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
 
@@ -365,7 +374,24 @@ const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
       </div>
 
       {/* Create Account Modal */}
-      {isCreateModalOpen && <CreateAccountModal onClose={() => setIsCreateModalOpen(false)} />}
+      {isCreateModalOpen && (
+        <CreateAccountModal
+          onClose={() => setIsCreateModalOpen(false)}
+          onStorageWarning={(message: string) => {
+            setIsCreateModalOpen(false)
+            setStorageWarningMessage(message)
+            setShowStorageWarning(true)
+          }}
+        />
+      )}
+
+      {/* Storage Warning Modal */}
+      {showStorageWarning && (
+        <StorageWarningModal
+          message={storageWarningMessage}
+          onClose={() => setShowStorageWarning(false)}
+        />
+      )}
     </div>
   )
 }

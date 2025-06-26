@@ -10,52 +10,6 @@ const Sample = () => {
   const [userOpHash, setUserOpHash] = useState<string | null>(null)
   const [txStatus, setTxStatus] = useState<string>('')
   const [isPolling, setIsPolling] = useState(false)
-  const [storageStatus, setStorageStatus] = useState<string>('')
-
-  // Function to fill localStorage
-  const fillLocalStorage = async () => {
-    try {
-      let i = 0
-      const largeString = 'x'.repeat(100000) // 100KB chunks
-
-      while (true) {
-        const key = `test_storage_fill_${i}`
-        localStorage.setItem(key, largeString)
-        i++
-        setStorageStatus(`Added ${i} chunks (${Math.round(i * 100)}KB)`)
-
-        // Yield control to prevent UI blocking
-        if (i % 10 === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 10))
-        }
-      }
-    } catch (error: any) {
-      if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-        setStorageStatus('✅ localStorage is now FULL! Try creating an account to see the warning.')
-      } else {
-        setStorageStatus(`Error: ${error.message}`)
-      }
-    }
-  }
-
-  // Function to clear test storage
-  const clearTestStorage = () => {
-    try {
-      const keys = Object.keys(localStorage)
-      let cleared = 0
-
-      keys.forEach((key) => {
-        if (key.startsWith('test_storage_fill_')) {
-          localStorage.removeItem(key)
-          cleared++
-        }
-      })
-
-      setStorageStatus(`✅ Cleared ${cleared} test items. localStorage space restored.`)
-    } catch (error: any) {
-      setStorageStatus(`Error clearing: ${error.message}`)
-    }
-  }
 
   useEffect(() => {
     let intervalId: number | null = null
@@ -157,76 +111,6 @@ const Sample = () => {
       >
         {AAaddress}
       </p>
-
-      {/* Storage Test Section */}
-      <div
-        style={{
-          marginBottom: '30px',
-          padding: '20px',
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          border: '2px solid #007bff',
-          maxWidth: '500px',
-        }}
-      >
-        <h3 style={{ margin: '0 0 15px 0', color: '#007bff' }}>📦 localStorage Test</h3>
-        <div style={{ marginBottom: '15px' }}>
-          <button
-            onClick={fillLocalStorage}
-            style={{
-              padding: '8px 16px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              borderRadius: '4px',
-              backgroundColor: '#dc3545',
-              color: '#fff',
-              border: 'none',
-              marginRight: '10px',
-            }}
-          >
-            🔴 Fill localStorage
-          </button>
-          <button
-            onClick={clearTestStorage}
-            style={{
-              padding: '8px 16px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              borderRadius: '4px',
-              backgroundColor: '#28a745',
-              color: '#fff',
-              border: 'none',
-            }}
-          >
-            🟢 Clear Test Data
-          </button>
-        </div>
-        {storageStatus && (
-          <p
-            style={{
-              fontSize: '12px',
-              color: '#666',
-              backgroundColor: '#f8f9fa',
-              padding: '8px',
-              borderRadius: '4px',
-              margin: 0,
-              wordBreak: 'break-word',
-            }}
-          >
-            {storageStatus}
-          </p>
-        )}
-        <p
-          style={{
-            fontSize: '11px',
-            color: '#999',
-            margin: '10px 0 0 0',
-            fontStyle: 'italic',
-          }}
-        >
-          💡 Fill storage, then try creating a new account to see the warning!
-        </p>
-      </div>
 
       <button
         onClick={handleExecute}

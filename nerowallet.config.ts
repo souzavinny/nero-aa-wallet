@@ -53,13 +53,13 @@ const config = {
         loginConfig: {
           google: {
             name: 'google',
-            verifier: 'NeroTest-Google-Maintest',
+            verifier: 'nerotest-aa',
             typeOfLogin: 'google',
             clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           },
           facebook: {
             name: 'facebook',
-            verifier: 'NeroTest-Facebook-Maintest',
+            verifier: 'nerotest-aa',
             typeOfLogin: 'facebook',
             clientId: import.meta.env.VITE_FACEBOOK_CLIENT_ID,
           },

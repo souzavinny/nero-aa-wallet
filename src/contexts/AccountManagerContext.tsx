@@ -5,12 +5,13 @@ import { SimpleAccount } from '@/helper/simpleAccount'
 import { useEthersSigner, useConfig } from '@/hooks'
 import { AccountManagerContextProps, AccountData, ProviderProps } from '@/types'
 import { generateDeterministicSalt, generateStorageKeys } from '@/utils/security'
+import { saveAccounts, loadAccounts, migrateFromLocalStorage } from '@/utils/localforage'
 
 export const AccountManagerContext = createContext<AccountManagerContextProps | undefined>(
   undefined,
 )
 
-// Authentication method detection
+// Auth method types
 type AuthMethod =
   | 'metamask'
   | 'web3auth-google'
@@ -32,12 +33,13 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
   const [loading, setLoading] = useState(false)
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
   const [showHiddenAccounts, setShowHiddenAccounts] = useState(false)
+  const [migrationCompleted, setMigrationCompleted] = useState(false)
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const signer = useEthersSigner()
   const { isConnected: isWalletConnected, connector } = useAccount()
 
   // Keep track of authentication state
-  const hasInitialized = useRef(false)
   const currentSignerAddress = useRef<string | null>(null)
   const currentAuthInfo = useRef<AuthInfo | null>(null)
 
@@ -52,64 +54,55 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
       return { method: 'unknown' }
     }
 
-    const connectorName = connector.name?.toLowerCase() || ''
-
-    // MetaMask detection
-    if (connectorName.includes('metamask') || connector.id === 'metaMask') {
-      return {
-        method: 'metamask',
-        walletName: 'MetaMask',
-      }
-    }
-
     // Web3Auth detection
-    if (
-      connectorName.includes('nero') ||
-      connector.id === 'web3auth' ||
-      connectorName.includes('web3auth')
-    ) {
+    if (connector.id === 'web3auth') {
       try {
-        // Try to get Web3Auth user info to determine social login type
-        const web3authUserInfo = await (connector as any)?.web3AuthInstance?.getUserInfo?.()
+        // @ts-ignore - Access Web3Auth specific properties
+        const web3auth = (connector as any).web3auth
+        if (web3auth && web3auth.connectedAdapterName) {
+          const adapterName = web3auth.connectedAdapterName.toLowerCase()
+          
+          // Get user info for social logins
+          const userInfo = await web3auth.getUserInfo?.()
+          const userId = userInfo?.verifierId || userInfo?.email || userInfo?.sub
 
-        if (web3authUserInfo) {
-          const { typeOfLogin, email, name } = web3authUserInfo
-
-          switch (typeOfLogin?.toLowerCase()) {
+          switch (adapterName) {
             case 'google':
-              return {
-                method: 'web3auth-google',
-                userId: email || name,
-                walletName: `Google (${name || email})`,
+              return { 
+                method: 'web3auth-google', 
+                userId, 
+                walletName: `Google (${userInfo?.email || 'Unknown'})` 
               }
             case 'facebook':
-              return {
-                method: 'web3auth-facebook',
-                userId: email || name,
-                walletName: `Facebook (${name || email})`,
+              return { 
+                method: 'web3auth-facebook', 
+                userId, 
+                walletName: `Facebook (${userInfo?.name || 'Unknown'})` 
               }
             case 'discord':
-              return {
-                method: 'web3auth-discord',
-                userId: email || name,
-                walletName: `Discord (${name || email})`,
+              return { 
+                method: 'web3auth-discord', 
+                userId, 
+                walletName: `Discord (${userInfo?.name || 'Unknown'})` 
               }
             default:
-              return {
-                method: 'web3auth-google', // Default fallback
-                userId: email || name,
-                walletName: `Web3Auth (${name || email})`,
+              return { 
+                method: 'web3auth-google', 
+                userId, 
+                walletName: `Web3Auth (${adapterName})` 
               }
           }
         }
       } catch (error) {
-        console.warn('Could not retrieve Web3Auth user info:', error)
+        console.warn('Could not detect Web3Auth adapter:', error)
       }
+    }
 
-      // Fallback for Web3Auth without user info
+    // MetaMask detection
+    if (connector.id === 'metaMask' || connector.name?.toLowerCase().includes('metamask')) {
       return {
-        method: 'web3auth-google',
-        walletName: 'Web3Auth',
+        method: 'metamask',
+        walletName: 'MetaMask',
       }
     }
 
@@ -149,14 +142,32 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     return current.method !== newAuthInfo.method || current.userId !== newAuthInfo.userId
   }, [])
 
-  // Clear accounts when authentication context changes
+  // Run migration once on startup
+  useEffect(() => {
+    if (!migrationCompleted) {
+      migrateFromLocalStorage()
+        .then((result) => {
+          if (result.migrated && result.errors.length > 0) {
+            console.warn('Migration completed with errors:', result.errors)
+          }
+        })
+        .catch((error) => {
+          console.error('Migration failed:', error)
+        })
+        .finally(() => {
+          setMigrationCompleted(true)
+        })
+    }
+  }, [migrationCompleted])
+
+  // Clear state when authentication context changes
   useEffect(() => {
     const handleAuthChange = async () => {
       if (!signer) {
         // No signer = clear everything
         setAccounts([])
         setActiveAccountId(null)
-        hasInitialized.current = false
+        setHasInitialized(false)
         currentSignerAddress.current = null
         currentAuthInfo.current = null
         return
@@ -174,7 +185,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
           // Clear current state
           setAccounts([])
           setActiveAccountId(null)
-          hasInitialized.current = false
+          setHasInitialized(false)
 
           // Update tracking variables
           currentSignerAddress.current = signerAddress
@@ -183,46 +194,57 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
           // Load accounts for new authentication context
           const storageResult = await getStorageKeys()
           if (storageResult) {
-            const { accountsKey, activeAccountKey } = storageResult
-            const storedAccounts = localStorage.getItem(accountsKey)
-            const storedActiveAccountId = localStorage.getItem(activeAccountKey)
+            const { accountsKey, activeAccountKey, authInfo } = storageResult
+            
+            try {
+              // Use async localforage functions
+              const [storedAccounts, storedActiveAccountId] = await Promise.all([
+                loadAccounts(accountsKey),
+                loadAccounts(activeAccountKey)
+              ])
 
-            if (storedAccounts) {
-              try {
-                const parsedAccounts = JSON.parse(storedAccounts)
-
+              if (storedAccounts && Array.isArray(storedAccounts)) {
                 // Filter and validate accounts
-                const validAccounts = Array.isArray(parsedAccounts)
-                  ? parsedAccounts.filter(
-                      (acc: any) =>
-                        acc &&
-                        typeof acc === 'object' &&
-                        acc.id &&
-                        acc.name &&
-                        acc.AAaddress &&
-                        typeof acc.salt === 'number',
-                    )
-                  : []
+                const validAccounts = storedAccounts.filter(
+                  (acc: any) =>
+                    acc &&
+                    typeof acc === 'object' &&
+                    acc.id &&
+                    acc.name &&
+                    acc.AAaddress &&
+                    typeof acc.salt === 'number',
+                )
 
                 setAccounts(validAccounts)
 
+                const activeId = Array.isArray(storedActiveAccountId) 
+                  ? storedActiveAccountId[0] 
+                  : storedActiveAccountId
+
                 if (
-                  storedActiveAccountId &&
-                  validAccounts.find((acc: AccountData) => acc.id === storedActiveAccountId)
+                  activeId &&
+                  typeof activeId === 'string' &&
+                  validAccounts.find((acc: AccountData) => acc.id === activeId)
                 ) {
-                  setActiveAccountId(storedActiveAccountId)
+                  setActiveAccountId(activeId)
+                  // Recreate SimpleAccount instance for the active account
+                  setTimeout(async () => {
+                    await ensureActiveAccountInstance(activeId, validAccounts)
+                  }, 0)
                 } else if (validAccounts.length > 0) {
                   setActiveAccountId(validAccounts[0].id)
+                  // Recreate SimpleAccount instance for the first account
+                  setTimeout(async () => {
+                    await ensureActiveAccountInstance(validAccounts[0].id, validAccounts)
+                  }, 0)
                 }
-              } catch (error) {
-                console.error('Error loading accounts from storage:', error)
               }
-            } else {
-              console.warn(`📂 No existing accounts found for ${authInfo.walletName}`)
+            } catch (error) {
+              console.error('Error loading accounts from storage:', error)
             }
           }
 
-          hasInitialized.current = true
+          setHasInitialized(true)
         }
       } catch (error) {
         console.error('Error handling authentication change:', error)
@@ -232,32 +254,40 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     handleAuthChange()
   }, [signer, detectAuthInfo, hasAuthChanged, getStorageKeys])
 
-  // Save accounts to localStorage whenever they change (using auth-specific key)
+  // Save accounts to storage whenever they change (using auth-specific key)
   useEffect(() => {
-    const saveAccounts = async () => {
+    const saveAccountsAsync = async () => {
       if (accounts.length > 0 && currentSignerAddress.current && currentAuthInfo.current) {
         const storageResult = await getStorageKeys()
         if (storageResult) {
-          localStorage.setItem(storageResult.accountsKey, JSON.stringify(accounts))
+          try {
+            await saveAccounts(storageResult.accountsKey, accounts)
+          } catch (error) {
+            console.error('Error saving accounts:', error)
+          }
         }
       }
     }
 
-    saveAccounts()
+    saveAccountsAsync()
   }, [accounts, getStorageKeys])
 
-  // Save active account ID to localStorage (using auth-specific key)
+  // Save active account ID to storage (using auth-specific key)
   useEffect(() => {
-    const saveActiveAccount = async () => {
+    const saveActiveAccountAsync = async () => {
       if (activeAccountId && currentSignerAddress.current && currentAuthInfo.current) {
         const storageResult = await getStorageKeys()
         if (storageResult) {
-          localStorage.setItem(storageResult.activeAccountKey, activeAccountId)
+          try {
+            await saveAccounts(storageResult.activeAccountKey, [activeAccountId])
+          } catch (error) {
+            console.error('Error saving active account:', error)
+          }
         }
       }
     }
 
-    saveActiveAccount()
+    saveActiveAccountAsync()
   }, [activeAccountId, getStorageKeys])
 
   const generateAccountId = useCallback(() => {
@@ -303,6 +333,35 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
       }
     },
     [signer, rpcUrl, bundlerUrl, entryPoint, accountFactory],
+  )
+
+  // Helper function to ensure an account has its SimpleAccount instance
+  // Note: SimpleAccount instances are not stored in localforage due to serialization issues
+  // They contain functions and complex objects that can't be cloned by IndexedDB
+  // Instead, we recreate them as needed using the stored salt value
+  const ensureActiveAccountInstance = useCallback(
+    async (accountId: string, accountList?: AccountData[]) => {
+      if (!signer) return
+
+      const targetAccounts = accountList || accounts
+      const account = targetAccounts.find((acc) => acc.id === accountId)
+      if (!account || account.simpleAccountInstance) return
+
+      try {
+        const { simpleAccount } = await initializeSimpleAccount(account.salt)
+        
+        setAccounts((prev) =>
+          prev.map((acc) =>
+            acc.id === accountId 
+              ? { ...acc, simpleAccountInstance: simpleAccount }
+              : acc
+          )
+        )
+      } catch (error) {
+        console.error('Error creating SimpleAccount instance:', error)
+      }
+    },
+    [signer, accounts, initializeSimpleAccount]
   )
 
   const createAccount = useCallback(
@@ -374,9 +433,15 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
       const account = accounts.find((acc) => acc.id === accountId)
       if (account) {
         setActiveAccountId(accountId)
+        // Ensure the switched account has its SimpleAccount instance
+        if (!account.simpleAccountInstance) {
+          setTimeout(async () => {
+            await ensureActiveAccountInstance(accountId)
+          }, 0)
+        }
       }
     },
-    [accounts],
+    [accounts, ensureActiveAccountInstance],
   )
 
   const updateAccountName = useCallback((accountId: string, name: string) => {
@@ -395,29 +460,28 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
       // Don't allow hiding the first account (consolidation master account)
       const firstAccount = accounts[0]
       if (firstAccount && targetAccount.id === firstAccount.id) {
-        console.warn('Cannot hide the first account - it is used as the consolidation target')
+        console.warn('Cannot hide the master account used for consolidation')
         return
       }
 
-      // Don't allow hiding the last visible account
-      if (visibleAccounts.length <= 1) {
-        console.warn('Cannot hide the last visible account')
-        return
-      }
-
+      // Hide the account
       setAccounts((prev) =>
         prev.map((acc) => (acc.id === accountId ? { ...acc, hidden: true } : acc)),
       )
 
-      // If the hidden account was active, switch to another visible account
+      // If this was the active account, switch to the first visible account
       if (activeAccountId === accountId) {
-        const remainingVisible = visibleAccounts.filter((acc) => acc.id !== accountId)
-        if (remainingVisible.length > 0) {
-          setActiveAccountId(remainingVisible[0].id)
+        const visibleAccountsAfterHiding = accounts.filter(
+          (acc) => acc.id !== accountId && !acc.hidden,
+        )
+        if (visibleAccountsAfterHiding.length > 0) {
+          setActiveAccountId(visibleAccountsAfterHiding[0].id)
+        } else {
+          setActiveAccountId(null)
         }
       }
     },
-    [accounts, visibleAccounts, activeAccountId],
+    [accounts, activeAccountId],
   )
 
   const unhideAccount = useCallback((accountId: string) => {
@@ -428,20 +492,26 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
 
   const refreshActiveAccount = useCallback(
     async (pm?: 'token' | 'verifying' | 'legacy-token') => {
-      if (!activeAccountId || !signer || loading || isCreatingAccount) return
-
-      const activeAccount = accounts.find((acc) => acc.id === activeAccountId)
-      if (!activeAccount) return
+      if (!activeAccountId || !signer) {
+        console.warn('No active account or signer available')
+        return
+      }
 
       setLoading(true)
       try {
-        const { simpleAccount, address } = await initializeSimpleAccount(activeAccount.salt, pm)
+        const account = accounts.find((acc) => acc.id === activeAccountId)
+        if (!account) {
+          console.error('Active account not found')
+          return
+        }
 
+        // Re-initialize the SimpleAccount instance
+        const { simpleAccount } = await initializeSimpleAccount(account.salt, pm)
+
+        // Update the account with the new instance
         setAccounts((prev) =>
           prev.map((acc) =>
-            acc.id === activeAccountId
-              ? { ...acc, simpleAccountInstance: simpleAccount, AAaddress: address }
-              : acc,
+            acc.id === activeAccountId ? { ...acc, simpleAccountInstance: simpleAccount } : acc,
           ),
         )
       } catch (error) {
@@ -450,7 +520,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         setLoading(false)
       }
     },
-    [activeAccountId, accounts, signer, loading, isCreatingAccount, initializeSimpleAccount],
+    [activeAccountId, accounts, signer, initializeSimpleAccount],
   )
 
   // 🔄 ACCOUNT RECOVERY SYSTEM
@@ -582,21 +652,23 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     }
 
     if (
-      hasInitialized.current &&
+      hasInitialized &&
       isWalletConnected &&
       signer &&
       visibleAccounts.length === 0 &&
-      !isCreatingAccount
+      !isCreatingAccount &&
+      migrationCompleted
     ) {
       createAccount('Account 1')
     }
   }, [
-    hasInitialized.current,
+    hasInitialized,
     isWalletConnected,
     signer,
     visibleAccounts.length,
     isCreatingAccount,
     createAccount,
+    migrationCompleted,
   ])
 
   const activeAccount = accounts.find((acc) => acc.id === activeAccountId) || null

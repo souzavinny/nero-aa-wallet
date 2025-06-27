@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ERC20Token, NftWithImages } from '@/types'
+import { tokenEventEmitter } from '@/utils'
 import {
-  tokenEventEmitter,
   saveCustomERC20Token,
   getCustomERC20Tokens,
   removeCustomERC20Token,
@@ -9,44 +9,76 @@ import {
   getCustomERC721Tokens,
   removeCustomERC721Token,
   updateCustomERC721Token,
-} from '@/utils'
+} from '@/utils/localforage'
 
 export const useCustomERC20Tokens = () => {
-  const [erc20Tokens, setERC20Tokens] = useState<ERC20Token[]>(() => {
-    try {
-      return getCustomERC20Tokens()
-    } catch (error) {
-      console.error('Failed to load initial tokens')
-      return []
-    }
-  })
+  const [erc20Tokens, setERC20Tokens] = useState<ERC20Token[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    setIsLoading(true)
-    const unsubscribe = tokenEventEmitter.subscribe(() => {
-      const tokens = getCustomERC20Tokens()
-      setERC20Tokens(tokens)
-      setIsLoading(false)
+    let isMounted = true
+
+    const loadTokens = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const tokens = await getCustomERC20Tokens()
+        
+        if (isMounted) {
+          setERC20Tokens(tokens)
+        }
+      } catch (err) {
+        console.error('Failed to load initial ERC20 tokens:', err)
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to load tokens'))
+          setERC20Tokens([])
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadTokens()
+
+    const unsubscribe = tokenEventEmitter.subscribe(async () => {
+      try {
+        const tokens = await getCustomERC20Tokens()
+        if (isMounted) {
+          setERC20Tokens(tokens)
+        }
+      } catch (err) {
+        console.error('Failed to update ERC20 tokens:', err)
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to update tokens'))
+        }
+      }
     })
 
-    setIsLoading(false)
-    return () => unsubscribe()
+    return () => {
+      isMounted = false
+      unsubscribe()
+    }
   }, [])
 
   const addERC20Token = useCallback(async (token: ERC20Token) => {
     try {
+      setError(null)
       await saveCustomERC20Token(token)
       setERC20Tokens((prev) => [...prev, token])
       tokenEventEmitter.emit()
     } catch (error) {
-      console.error('Failed to add token')
+      console.error('Failed to add ERC20 token:', error)
+      setError(error instanceof Error ? error : new Error('Failed to add token'))
       throw error
     }
   }, [])
 
   const removeERC20Token = useCallback(async (contractAddress: string) => {
     try {
+      setError(null)
       await removeCustomERC20Token(contractAddress)
       setERC20Tokens((prev) =>
         prev.filter(
@@ -55,7 +87,8 @@ export const useCustomERC20Tokens = () => {
       )
       tokenEventEmitter.emit()
     } catch (error) {
-      console.error('Failed to remove token')
+      console.error('Failed to remove ERC20 token:', error)
+      setError(error instanceof Error ? error : new Error('Failed to remove token'))
       throw error
     }
   }, [])
@@ -65,91 +98,135 @@ export const useCustomERC20Tokens = () => {
     addERC20Token,
     removeERC20Token,
     isLoading,
+    error,
   }
 }
 
 export const useCustomERC721Tokens = () => {
-  const [erc721Tokens, setERC721Tokens] = useState<NftWithImages[]>(() => {
-    try {
-      return getCustomERC721Tokens()
-    } catch (error) {
-      console.error('Failed to load initial NFT tokens')
-      return []
-    }
-  })
+  const [erc721Tokens, setERC721Tokens] = useState<NftWithImages[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    setIsLoading(true)
-    try {
-      const tokens = getCustomERC721Tokens()
-      setERC721Tokens(tokens)
-    } catch (error) {
-      console.error('Failed to load NFT tokens', error)
-    } finally {
-      setIsLoading(false)
+    let isMounted = true
+
+    const loadTokens = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const tokens = await getCustomERC721Tokens()
+        
+        if (isMounted) {
+          setERC721Tokens(tokens)
+        }
+      } catch (err) {
+        console.error('Failed to load initial ERC721 tokens:', err)
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to load NFT tokens'))
+          setERC721Tokens([])
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
     }
 
-    const unsubscribe = tokenEventEmitter.subscribe(() => {
-      setIsLoading(true)
+    loadTokens()
+
+    const unsubscribe = tokenEventEmitter.subscribe(async () => {
       try {
-        const tokens = getCustomERC721Tokens()
-        setERC721Tokens(tokens)
-      } catch (error) {
-        console.error('Failed to update NFT tokens', error)
+        setIsLoading(true)
+        const tokens = await getCustomERC721Tokens()
+        if (isMounted) {
+          setERC721Tokens(tokens)
+        }
+      } catch (err) {
+        console.error('Failed to update ERC721 tokens:', err)
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to update NFT tokens'))
+        }
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     })
 
-    return () => unsubscribe()
+    return () => {
+      isMounted = false
+      unsubscribe()
+    }
   }, [])
 
-  const addERC721Token = useCallback((token: NftWithImages) => {
-    saveCustomERC721Token(token)
-    setERC721Tokens((prev) => [...prev, token])
-    tokenEventEmitter.emit()
+  const addERC721Token = useCallback(async (token: NftWithImages) => {
+    try {
+      setError(null)
+      await saveCustomERC721Token(token)
+      setERC721Tokens((prev) => [...prev, token])
+      tokenEventEmitter.emit()
+    } catch (error) {
+      console.error('Failed to add ERC721 token:', error)
+      setError(error instanceof Error ? error : new Error('Failed to add NFT'))
+      throw error
+    }
   }, [])
 
   const removeERC721Token = useCallback(
-    (contractAddress: string, tokenId?: number) => {
-      if (tokenId !== undefined) {
-        const updatedTokens = erc721Tokens
-          .map((token) => {
-            if (token.contractAddress.toLowerCase() === contractAddress.toLowerCase()) {
-              return {
-                ...token,
-                tokenData: token.tokenData.filter((data) => data.tokenId !== tokenId),
+    async (contractAddress: string, tokenId?: number) => {
+      try {
+        setError(null)
+        
+        if (tokenId !== undefined) {
+          const updatedTokens = erc721Tokens
+            .map((token) => {
+              if (token.contractAddress.toLowerCase() === contractAddress.toLowerCase()) {
+                return {
+                  ...token,
+                  tokenData: token.tokenData.filter((data) => data.tokenId !== tokenId),
+                }
               }
-            }
-            return token
-          })
-          .filter((token) => token.tokenData.length > 0)
+              return token
+            })
+            .filter((token) => token.tokenData.length > 0)
 
-        setERC721Tokens(updatedTokens)
-        // localstorage更新
-        if (updatedTokens.length > 0) {
-          const targetToken = updatedTokens.find(
-            (t) => t.contractAddress.toLowerCase() === contractAddress.toLowerCase(),
-          )
-          if (targetToken) {
-            updateCustomERC721Token(targetToken)
+          setERC721Tokens(updatedTokens)
+          
+          // Update storage
+          if (updatedTokens.length > 0) {
+            const targetToken = updatedTokens.find(
+              (t) => t.contractAddress.toLowerCase() === contractAddress.toLowerCase(),
+            )
+            if (targetToken) {
+              await updateCustomERC721Token(targetToken)
+            }
+          } else {
+            await removeCustomERC721Token(contractAddress)
           }
         } else {
-          removeCustomERC721Token(contractAddress)
+          await removeCustomERC721Token(contractAddress)
+          setERC721Tokens((prev) =>
+            prev.filter(
+              (token) => token.contractAddress.toLowerCase() !== contractAddress.toLowerCase(),
+            ),
+          )
         }
-      } else {
-        removeCustomERC721Token(contractAddress)
-        setERC721Tokens((prev) =>
-          prev.filter(
-            (token) => token.contractAddress.toLowerCase() !== contractAddress.toLowerCase(),
-          ),
-        )
+        
+        tokenEventEmitter.emit()
+      } catch (error) {
+        console.error('Failed to remove ERC721 token:', error)
+        setError(error instanceof Error ? error : new Error('Failed to remove NFT'))
+        throw error
       }
-      tokenEventEmitter.emit()
     },
     [erc721Tokens],
   )
 
-  return { erc721Tokens, addERC721Token, removeERC721Token, isLoading }
+  return { 
+    erc721Tokens, 
+    addERC721Token, 
+    removeERC721Token, 
+    isLoading, 
+    error 
+  }
 }

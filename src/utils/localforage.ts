@@ -7,23 +7,23 @@ localforage.config({
   version: 1.0,
   size: 50 * 1024 * 1024, // 50MB
   storeName: 'nero_wallet_storage',
-  description: 'NERO AA Wallet storage using IndexedDB with localStorage fallback'
+  description: 'NERO AA Wallet storage using IndexedDB with localStorage fallback',
 })
 
 // Initialize separate stores for different data types
 const accountStore = localforage.createInstance({
   name: 'NERO-AA-Wallet',
-  storeName: 'accounts'
+  storeName: 'accounts',
 })
 
 const tokenStore = localforage.createInstance({
-  name: 'NERO-AA-Wallet', 
-  storeName: 'tokens'
+  name: 'NERO-AA-Wallet',
+  storeName: 'tokens',
 })
 
 const settingsStore = localforage.createInstance({
   name: 'NERO-AA-Wallet',
-  storeName: 'settings'
+  storeName: 'settings',
 })
 
 // Storage keys constants
@@ -34,7 +34,7 @@ const CUSTOM_ERC721_TOKENS_KEY = 'customERC721Tokens'
  * Enhanced storage quota check for localforage
  * Checks available quota and provides detailed storage information
  */
-export const isStorageNearFull = async (): Promise<{ 
+export const isStorageNearFull = async (): Promise<{
   isFull: boolean
   message?: string
   availableSpace?: number
@@ -53,14 +53,14 @@ export const isStorageNearFull = async (): Promise<{
           isFull: true,
           message: `Storage is ${Math.round(usageRatio * 100)}% full. Please clear some data to continue.`,
           availableSpace,
-          usedSpace
+          usedSpace,
         }
       }
 
-      return { 
-        isFull: false, 
-        availableSpace, 
-        usedSpace 
+      return {
+        isFull: false,
+        availableSpace,
+        usedSpace,
       }
     } else {
       // Fallback to testing with a small write operation
@@ -75,7 +75,8 @@ export const isStorageNearFull = async (): Promise<{
         if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
           return {
             isFull: true,
-            message: "Your browser's storage is full. Please clear some data or increase storage quota to create new accounts."
+            message:
+              "Your browser's storage is full. Please clear some data or increase storage quota to create new accounts.",
           }
         }
         throw error
@@ -85,40 +86,25 @@ export const isStorageNearFull = async (): Promise<{
     console.error('Error checking storage quota:', error)
     return {
       isFull: true,
-      message: 'Unable to check storage availability. Please try again or clear your browser data.'
+      message: 'Unable to check storage availability. Please try again or clear your browser data.',
     }
   }
 }
 
-/**
- * Safe JSON parsing with fallback
- */
-const safeJsonParse = <T>(jsonString: string | null, fallback: T): T => {
-  if (!jsonString) return fallback
-  try {
-    return JSON.parse(jsonString)
-  } catch {
-    return fallback
-  }
-}
-
-/**
- * Account Storage Functions
- */
 export const saveAccounts = async (key: string, accounts: any[]): Promise<void> => {
   try {
     // Filter out non-serializable data (like SimpleAccount instances)
-    const serializableAccounts = accounts.map(account => {
+    const serializableAccounts = accounts.map((account) => {
       const { simpleAccountInstance, ...serializableAccount } = account
       return serializableAccount
     })
-    
+
     await accountStore.setItem(key, serializableAccounts)
   } catch (error) {
     console.error('Error saving accounts:', error)
     // Fallback to localStorage if localforage fails
     try {
-      const serializableAccounts = accounts.map(account => {
+      const serializableAccounts = accounts.map((account) => {
         const { simpleAccountInstance, ...serializableAccount } = account
         return serializableAccount
       })
@@ -210,7 +196,7 @@ export const removeCustomERC20Token = async (contractAddress: string): Promise<v
     const existingTokens = await getCustomERC20Tokens()
     const normalizedAddress = contractAddress.toLowerCase()
     const updatedTokens = existingTokens.filter(
-      (token) => token.contractAddress.toLowerCase() !== normalizedAddress
+      (token) => token.contractAddress.toLowerCase() !== normalizedAddress,
     )
     await tokenStore.setItem(CUSTOM_ERC20_TOKENS_KEY, updatedTokens)
   } catch (error) {
@@ -220,7 +206,7 @@ export const removeCustomERC20Token = async (contractAddress: string): Promise<v
       const existingTokens = getCustomERC20TokensSync()
       const normalizedAddress = contractAddress.toLowerCase()
       const updatedTokens = existingTokens.filter(
-        (token) => token.contractAddress.toLowerCase() !== normalizedAddress
+        (token) => token.contractAddress.toLowerCase() !== normalizedAddress,
       )
       localStorage.setItem(CUSTOM_ERC20_TOKENS_KEY, JSON.stringify(updatedTokens))
     } catch (fallbackError) {
@@ -234,18 +220,20 @@ export const saveCustomERC721Token = async (token: NftWithImages): Promise<void>
   try {
     const existingTokens = await getCustomERC721Tokens()
     const existingToken = existingTokens.find(
-      (t) => t.contractAddress.toLowerCase() === token.contractAddress.toLowerCase()
+      (t) => t.contractAddress.toLowerCase() === token.contractAddress.toLowerCase(),
     )
 
     if (existingToken) {
       const uniqueTokenData = token.tokenData
         .filter(
           (newData) =>
-            !existingToken.tokenData.some((existingData) => existingData.tokenId === newData.tokenId)
+            !existingToken.tokenData.some(
+              (existingData) => existingData.tokenId === newData.tokenId,
+            ),
         )
         .map((data) => ({
           ...data,
-          hidden: false
+          hidden: false,
         }))
 
       existingToken.tokenData.push(...uniqueTokenData)
@@ -253,7 +241,7 @@ export const saveCustomERC721Token = async (token: NftWithImages): Promise<void>
     } else {
       token.tokenData = token.tokenData.map((data) => ({
         ...data,
-        hidden: false
+        hidden: false,
       }))
       existingTokens.push(token)
     }
@@ -285,7 +273,9 @@ export const getCustomERC721Tokens = async (): Promise<NftWithImages[]> => {
 export const removeCustomERC721Token = async (contractAddress: string): Promise<void> => {
   try {
     const existingTokens = await getCustomERC721Tokens()
-    const updatedTokens = existingTokens.filter((token) => token.contractAddress !== contractAddress)
+    const updatedTokens = existingTokens.filter(
+      (token) => token.contractAddress !== contractAddress,
+    )
     await tokenStore.setItem(CUSTOM_ERC721_TOKENS_KEY, updatedTokens)
   } catch (error) {
     console.error('Error removing ERC721 token:', error)
@@ -297,7 +287,7 @@ export const updateCustomERC721Token = async (updatedToken: NftWithImages): Prom
   try {
     const existingTokens = await getCustomERC721Tokens()
     const updatedTokens = existingTokens.map((token) =>
-      token.contractAddress === updatedToken.contractAddress ? updatedToken : token
+      token.contractAddress === updatedToken.contractAddress ? updatedToken : token,
     )
     await tokenStore.setItem(CUSTOM_ERC721_TOKENS_KEY, updatedTokens)
   } catch (error) {
@@ -307,7 +297,7 @@ export const updateCustomERC721Token = async (updatedToken: NftWithImages): Prom
 }
 
 export const getCustomERC721TokenByAddress = async (
-  contractAddress: string
+  contractAddress: string,
 ): Promise<NftWithImages | undefined> => {
   try {
     const existingTokens = await getCustomERC721Tokens()
@@ -318,7 +308,10 @@ export const getCustomERC721TokenByAddress = async (
   }
 }
 
-export const toggleNFTVisibility = async (contractAddress: string, tokenId: number): Promise<void> => {
+export const toggleNFTVisibility = async (
+  contractAddress: string,
+  tokenId: number,
+): Promise<void> => {
   try {
     const existingTokens = await getCustomERC721Tokens()
     const updatedTokens = existingTokens.map((token) => {
@@ -330,7 +323,7 @@ export const toggleNFTVisibility = async (contractAddress: string, tokenId: numb
               return { ...data, hidden: !data.hidden }
             }
             return data
-          })
+          }),
         }
       }
       return token
@@ -363,13 +356,13 @@ export const setItem = async <T>(key: string, value: T): Promise<void> => {
 export const getItem = async <T>(key: string, fallback?: T): Promise<T | null> => {
   try {
     const value = await settingsStore.getItem<T>(key)
-    return value !== null ? value : (fallback || null)
+    return value !== null ? value : fallback || null
   } catch (error) {
     console.error('Error getting item:', error)
     // Fallback to localStorage
     try {
       const stored = localStorage.getItem(key)
-      return stored ? JSON.parse(stored) : (fallback || null)
+      return stored ? JSON.parse(stored) : fallback || null
     } catch (fallbackError) {
       console.error('Fallback getItem failed:', fallbackError)
       return fallback || null
@@ -407,10 +400,11 @@ export const migrateFromLocalStorage = async (): Promise<{
 
   try {
     // Migrate account data
-    const storageKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('nero-wallet-accounts-') || key.startsWith('nero-wallet-active-account-')
+    const storageKeys = Object.keys(localStorage).filter(
+      (key) =>
+        key.startsWith('nero-wallet-accounts-') || key.startsWith('nero-wallet-active-account-'),
     )
-    
+
     for (const key of storageKeys) {
       try {
         const data = localStorage.getItem(key)
@@ -452,12 +446,14 @@ export const migrateFromLocalStorage = async (): Promise<{
       errors.push(`Failed to migrate ERC721 tokens: ${error}`)
     }
 
-    console.log(`Migration completed: ${accountsMigrated} accounts, ${tokensMigrated} tokens migrated`)
+    console.log(
+      `Migration completed: ${accountsMigrated} accounts, ${tokensMigrated} tokens migrated`,
+    )
     return {
       migrated: true,
       accountsMigrated,
       tokensMigrated,
-      errors
+      errors,
     }
   } catch (error) {
     errors.push(`Migration failed: ${error}`)
@@ -465,7 +461,7 @@ export const migrateFromLocalStorage = async (): Promise<{
       migrated: false,
       accountsMigrated,
       tokensMigrated,
-      errors
+      errors,
     }
   }
 }

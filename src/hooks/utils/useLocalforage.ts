@@ -24,7 +24,7 @@ export function useLocalforage<T>(key: string, initialValue: T): UseLocalforageR
         setError(null)
 
         const value = await getItem<T>(key, initialValue)
-        
+
         if (isMounted) {
           setStoredValue(value || initialValue)
         }
@@ -62,7 +62,7 @@ export function useLocalforage<T>(key: string, initialValue: T): UseLocalforageR
         throw err
       }
     },
-    [key, storedValue]
+    [key, storedValue],
   )
 
   const removeValue = useCallback(async () => {
@@ -77,12 +77,12 @@ export function useLocalforage<T>(key: string, initialValue: T): UseLocalforageR
     }
   }, [key, initialValue])
 
-  return { 
-    storedValue, 
-    setValue, 
-    removeValue, 
-    isLoading, 
-    error 
+  return {
+    storedValue,
+    setValue,
+    removeValue,
+    isLoading,
+    error,
   }
 }
 
@@ -110,7 +110,7 @@ export function useAccountStorage(authKey: string) {
 
         const [loadedAccounts, loadedActiveId] = await Promise.all([
           getItem<any[]>(accountsKey, []),
-          getItem<string | null>(activeKey, null)
+          getItem<string | null>(activeKey, null),
         ])
 
         if (isMounted) {
@@ -148,7 +148,7 @@ export function useAccountStorage(authKey: string) {
         throw err
       }
     },
-    [accountsKey]
+    [accountsKey],
   )
 
   const saveActiveAccountId = useCallback(
@@ -167,7 +167,7 @@ export function useAccountStorage(authKey: string) {
         throw err
       }
     },
-    [activeKey]
+    [activeKey],
   )
 
   return {
@@ -176,6 +176,6 @@ export function useAccountStorage(authKey: string) {
     saveAccounts,
     saveActiveAccountId,
     isLoading,
-    error
+    error,
   }
-} 
+}

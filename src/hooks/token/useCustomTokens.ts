@@ -24,7 +24,7 @@ export const useCustomERC20Tokens = () => {
         setIsLoading(true)
         setError(null)
         const tokens = await getCustomERC20Tokens()
-        
+
         if (isMounted) {
           setERC20Tokens(tokens)
         }
@@ -115,7 +115,7 @@ export const useCustomERC721Tokens = () => {
         setIsLoading(true)
         setError(null)
         const tokens = await getCustomERC721Tokens()
-        
+
         if (isMounted) {
           setERC721Tokens(tokens)
         }
@@ -176,7 +176,7 @@ export const useCustomERC721Tokens = () => {
     async (contractAddress: string, tokenId?: number) => {
       try {
         setError(null)
-        
+
         if (tokenId !== undefined) {
           const updatedTokens = erc721Tokens
             .map((token) => {
@@ -191,7 +191,7 @@ export const useCustomERC721Tokens = () => {
             .filter((token) => token.tokenData.length > 0)
 
           setERC721Tokens(updatedTokens)
-          
+
           // Update storage
           if (updatedTokens.length > 0) {
             const targetToken = updatedTokens.find(
@@ -211,7 +211,7 @@ export const useCustomERC721Tokens = () => {
             ),
           )
         }
-        
+
         tokenEventEmitter.emit()
       } catch (error) {
         console.error('Failed to remove ERC721 token:', error)
@@ -222,11 +222,11 @@ export const useCustomERC721Tokens = () => {
     [erc721Tokens],
   )
 
-  return { 
-    erc721Tokens, 
-    addERC721Token, 
-    removeERC721Token, 
-    isLoading, 
-    error 
+  return {
+    erc721Tokens,
+    addERC721Token,
+    removeERC721Token,
+    isLoading,
+    error,
   }
 }

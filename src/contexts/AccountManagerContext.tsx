@@ -62,35 +62,35 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         const web3auth = (connector as any).web3auth
         if (web3auth && web3auth.connectedAdapterName) {
           const adapterName = web3auth.connectedAdapterName.toLowerCase()
-          
+
           // Get user info for social logins
           const userInfo = await web3auth.getUserInfo?.()
           const userId = userInfo?.verifierId || userInfo?.email || userInfo?.sub
 
           switch (adapterName) {
             case 'google':
-              return { 
-                method: 'web3auth-google', 
-                userId, 
-                walletName: `Google (${userInfo?.email || 'Unknown'})` 
+              return {
+                method: 'web3auth-google',
+                userId,
+                walletName: `Google (${userInfo?.email || 'Unknown'})`,
               }
             case 'facebook':
-              return { 
-                method: 'web3auth-facebook', 
-                userId, 
-                walletName: `Facebook (${userInfo?.name || 'Unknown'})` 
+              return {
+                method: 'web3auth-facebook',
+                userId,
+                walletName: `Facebook (${userInfo?.name || 'Unknown'})`,
               }
             case 'discord':
-              return { 
-                method: 'web3auth-discord', 
-                userId, 
-                walletName: `Discord (${userInfo?.name || 'Unknown'})` 
+              return {
+                method: 'web3auth-discord',
+                userId,
+                walletName: `Discord (${userInfo?.name || 'Unknown'})`,
               }
             default:
-              return { 
-                method: 'web3auth-google', 
-                userId, 
-                walletName: `Web3Auth (${adapterName})` 
+              return {
+                method: 'web3auth-google',
+                userId,
+                walletName: `Web3Auth (${adapterName})`,
               }
           }
         }
@@ -198,12 +198,12 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
           const storageResult = await getStorageKeys()
           if (storageResult) {
             const { accountsKey, activeAccountKey } = storageResult
-            
+
             try {
               // Use async localforage functions
               const [storedAccounts, storedActiveAccountId] = await Promise.all([
                 loadAccounts(accountsKey),
-                loadAccounts(activeAccountKey)
+                loadAccounts(activeAccountKey),
               ])
 
               if (storedAccounts && Array.isArray(storedAccounts)) {
@@ -220,8 +220,8 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
 
                 setAccounts(validAccounts)
 
-                const activeId = Array.isArray(storedActiveAccountId) 
-                  ? storedActiveAccountId[0] 
+                const activeId = Array.isArray(storedActiveAccountId)
+                  ? storedActiveAccountId[0]
                   : storedActiveAccountId
 
                 if (
@@ -352,19 +352,17 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
 
       try {
         const { simpleAccount } = await initializeSimpleAccount(account.salt)
-        
+
         setAccounts((prev) =>
           prev.map((acc) =>
-            acc.id === accountId 
-              ? { ...acc, simpleAccountInstance: simpleAccount }
-              : acc
-          )
+            acc.id === accountId ? { ...acc, simpleAccountInstance: simpleAccount } : acc,
+          ),
         )
       } catch (error) {
         console.error('Error creating SimpleAccount instance:', error)
       }
     },
-    [signer, accounts, initializeSimpleAccount]
+    [signer, accounts, initializeSimpleAccount],
   )
 
   const createAccount = useCallback(
@@ -398,9 +396,9 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
               // Check if account with this address already exists
               setAccounts((prev) => {
                 const existingAccount = prev.find(
-                  (acc) => acc.AAaddress.toLowerCase() === address.toLowerCase()
+                  (acc) => acc.AAaddress.toLowerCase() === address.toLowerCase(),
                 )
-                
+
                 if (existingAccount) {
                   console.warn('Account with this address already exists:', address)
                   return prev

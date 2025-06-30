@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react'
 import { AiFillCaretLeft, AiFillCaretRight } from 'react-icons/ai'
 import { TokenIcon, TokenSearchInput } from '@/components/features/token'
 import { PaymasterToken, TokenListProps } from '@/types/Paymaster'
-import { getCustomERC20Tokens, truncateAddress } from '@/utils'
+import { truncateAddress } from '@/utils'
+import { getCustomERC20Tokens } from '@/utils/localStorage'
 
 const TokenList: React.FC<TokenListProps> = ({
   tokens,

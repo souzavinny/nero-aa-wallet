@@ -4,10 +4,12 @@ export declare const useCustomERC20Tokens: () => {
     addERC20Token: (token: ERC20Token) => Promise<void>;
     removeERC20Token: (contractAddress: string) => Promise<void>;
     isLoading: boolean;
+    error: Error | null;
 };
 export declare const useCustomERC721Tokens: () => {
     erc721Tokens: NftWithImages[];
-    addERC721Token: (token: NftWithImages) => void;
-    removeERC721Token: (contractAddress: string, tokenId?: number) => void;
+    addERC721Token: (token: NftWithImages) => Promise<void>;
+    removeERC721Token: (contractAddress: string, tokenId?: number) => Promise<void>;
     isLoading: boolean;
+    error: Error | null;
 };

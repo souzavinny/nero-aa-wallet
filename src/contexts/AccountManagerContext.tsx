@@ -35,6 +35,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
   const [showHiddenAccounts, setShowHiddenAccounts] = useState(false)
   const [migrationCompleted, setMigrationCompleted] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
+  const [autoCreationAttempted, setAutoCreationAttempted] = useState(false)
 
   const signer = useEthersSigner()
   const { isConnected: isWalletConnected, connector } = useAccount()
@@ -168,6 +169,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
         setAccounts([])
         setActiveAccountId(null)
         setHasInitialized(false)
+        setAutoCreationAttempted(false)
         currentSignerAddress.current = null
         currentAuthInfo.current = null
         return
@@ -185,6 +187,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
           // Clear current state
           setAccounts([])
           setActiveAccountId(null)
+          setAutoCreationAttempted(false) // Reset auto-creation flag
           setHasInitialized(false)
 
           // Update tracking variables
@@ -194,7 +197,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
           // Load accounts for new authentication context
           const storageResult = await getStorageKeys()
           if (storageResult) {
-            const { accountsKey, activeAccountKey, authInfo } = storageResult
+            const { accountsKey, activeAccountKey } = storageResult
             
             try {
               // Use async localforage functions
@@ -392,16 +395,28 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
             try {
               const { simpleAccount, address } = await initializeSimpleAccount(salt)
 
-              const newAccount: AccountData = {
-                id: accountId,
-                name: accountName,
-                AAaddress: address,
-                salt: salt,
-                simpleAccountInstance: simpleAccount,
-                createdAt: Date.now(),
-              }
+              // Check if account with this address already exists
+              setAccounts((prev) => {
+                const existingAccount = prev.find(
+                  (acc) => acc.AAaddress.toLowerCase() === address.toLowerCase()
+                )
+                
+                if (existingAccount) {
+                  console.warn('Account with this address already exists:', address)
+                  return prev
+                }
 
-              setAccounts((prev) => [...prev, newAccount])
+                const newAccount: AccountData = {
+                  id: accountId,
+                  name: accountName,
+                  AAaddress: address,
+                  salt: salt,
+                  simpleAccountInstance: simpleAccount,
+                  createdAt: Date.now(),
+                }
+
+                return [...prev, newAccount]
+              })
               setActiveAccountId(accountId)
             } catch (error) {
               console.error('Error initializing account:', error)
@@ -657,9 +672,19 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
       signer &&
       visibleAccounts.length === 0 &&
       !isCreatingAccount &&
-      migrationCompleted
+      migrationCompleted &&
+      !autoCreationAttempted
     ) {
-      createAccount('Account 1')
+      // Add small delay to ensure storage loading is complete
+      const timer = setTimeout(() => {
+        // Double-check no accounts exist after delay
+        if (visibleAccounts.length === 0 && !autoCreationAttempted) {
+          setAutoCreationAttempted(true)
+          createAccount('Account 1')
+        }
+      }, 500)
+
+      return () => clearTimeout(timer)
     }
   }, [
     hasInitialized,
@@ -669,6 +694,7 @@ export const AccountManagerProvider: React.FC<ProviderProps> = ({ children }) =>
     isCreatingAccount,
     createAccount,
     migrationCompleted,
+    autoCreationAttempted,
   ])
 
   const activeAccount = accounts.find((acc) => acc.id === activeAccountId) || null

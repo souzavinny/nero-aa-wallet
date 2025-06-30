@@ -3,3 +3,4 @@ export * from './useAsyncState';
 export * from './useTransaction';
 export * from './useLocalStorage';
 export * from './useContractValidation';
+export * from './useLocalforage';

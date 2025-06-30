@@ -1,7 +1,9 @@
 export * from './builder';
+export * from './errorHandling';
 export * from './events';
 export * from './format';
-export * from './localStorage';
+export * from './security';
 export * from './token';
 export * from './validation';
-export * from './errorHandling';
+export { isLocalStorageNearFull } from './localStorage';
+export * from './localforage';

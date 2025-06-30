@@ -32,6 +32,25 @@ export interface UseLocalStorageReturn<T> {
     setValue: (value: T | ((val: T) => T)) => void;
     removeValue: () => void;
 }
+export interface UseLocalforageReturn<T> {
+    storedValue: T;
+    setValue: (value: T | ((val: T) => T)) => Promise<void>;
+    removeValue: () => Promise<void>;
+    isLoading: boolean;
+    error: Error | null;
+}
+export interface StorageQuotaCheck {
+    isFull: boolean;
+    message?: string;
+    availableSpace?: number;
+    usedSpace?: number;
+}
+export interface MigrationResult {
+    migrated: boolean;
+    accountsMigrated: number;
+    tokensMigrated: number;
+    errors: string[];
+}
 export type ContractType = 'ERC20' | 'ERC721';
 export interface UseContractValidationProps {
     contractAddress: string;

@@ -1,4 +1,12 @@
 import { NftWithImages, ERC20Token } from '@/types';
+/**
+ * Simple localStorage quota check
+ * Returns true if storage is full or nearly full
+ */
+export declare const isLocalStorageNearFull: () => {
+    isFull: boolean;
+    message?: string;
+};
 export declare const saveCustomERC20Token: (token: ERC20Token) => void;
 export declare const getCustomERC20Tokens: () => ERC20Token[];
 export declare const removeCustomERC20Token: (contractAddress: string) => void;

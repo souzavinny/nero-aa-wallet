@@ -95,6 +95,7 @@ export const saveAccounts = async (key: string, accounts: any[]): Promise<void> 
   try {
     // Filter out non-serializable data (like SimpleAccount instances)
     const serializableAccounts = accounts.map((account) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { simpleAccountInstance, ...serializableAccount } = account
       return serializableAccount
     })
@@ -105,6 +106,7 @@ export const saveAccounts = async (key: string, accounts: any[]): Promise<void> 
     // Fallback to localStorage if localforage fails
     try {
       const serializableAccounts = accounts.map((account) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { simpleAccountInstance, ...serializableAccount } = account
         return serializableAccount
       })
@@ -445,10 +447,6 @@ export const migrateFromLocalStorage = async (): Promise<{
     } catch (error) {
       errors.push(`Failed to migrate ERC721 tokens: ${error}`)
     }
-
-    console.log(
-      `Migration completed: ${accountsMigrated} accounts, ${tokensMigrated} tokens migrated`,
-    )
     return {
       migrated: true,
       accountsMigrated,

@@ -12,9 +12,6 @@ export declare const isStorageNearFull: () => Promise<{
     availableSpace?: number;
     usedSpace?: number;
 }>;
-/**
- * Account Storage Functions
- */
 export declare const saveAccounts: (key: string, accounts: any[]) => Promise<void>;
 export declare const loadAccounts: (key: string) => Promise<any[] | null>;
 export declare const removeAccounts: (key: string) => Promise<void>;

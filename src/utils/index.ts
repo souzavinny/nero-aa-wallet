@@ -1,7 +1,13 @@
 export * from './builder'
+export * from './errorHandling'
 export * from './events'
 export * from './format'
-export * from './localStorage'
+export * from './security'
 export * from './token'
 export * from './validation'
-export * from './errorHandling'
+
+// Export localStorage utilities (non-conflicting)
+export { isLocalStorageNearFull } from './localStorage'
+
+// Export localforage utilities (preferred for storage operations)
+export * from './localforage'

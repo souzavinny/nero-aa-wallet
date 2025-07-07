@@ -3,6 +3,39 @@ import { NftWithImages, ERC20Token } from '@/types'
 const CUSTOM_ERC20_TOKENS_KEY = 'customERC20Tokens'
 const CUSTOM_ERC721_TOKENS_KEY = 'customERC721Tokens'
 
+/**
+ * Simple localStorage quota check
+ * Returns true if storage is full or nearly full
+ */
+export const isLocalStorageNearFull = (): { isFull: boolean; message?: string } => {
+  try {
+    // Try to estimate current usage by checking existing keys
+    const testKey = '__nero_storage_test__'
+    const testData = 'x'.repeat(100000) // 100KB test data
+
+    try {
+      localStorage.setItem(testKey, testData)
+      localStorage.removeItem(testKey)
+      return { isFull: false }
+    } catch (error: any) {
+      if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        return {
+          isFull: true,
+          message:
+            "Your browser's local storage is full. Please clear some data or increase storage quota to create new accounts.",
+        }
+      }
+      throw error
+    }
+  } catch (error) {
+    console.error('Error checking localStorage quota:', error)
+    return {
+      isFull: true,
+      message: 'Unable to check storage availability. Please try again or clear your browser data.',
+    }
+  }
+}
+
 export const saveCustomERC20Token = (token: ERC20Token) => {
   const existingTokens = getCustomERC20Tokens()
   const updatedTokens = [...existingTokens, token]

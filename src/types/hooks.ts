@@ -42,6 +42,31 @@ export interface UseLocalStorageReturn<T> {
   removeValue: () => void
 }
 
+// Localforage関連のインターフェース (非同期版)
+export interface UseLocalforageReturn<T> {
+  storedValue: T
+  setValue: (value: T | ((val: T) => T)) => Promise<void>
+  removeValue: () => Promise<void>
+  isLoading: boolean
+  error: Error | null
+}
+
+// ストレージクォータチェック結果
+export interface StorageQuotaCheck {
+  isFull: boolean
+  message?: string
+  availableSpace?: number
+  usedSpace?: number
+}
+
+// 移行結果のインターフェース
+export interface MigrationResult {
+  migrated: boolean
+  accountsMigrated: number
+  tokensMigrated: number
+  errors: string[]
+}
+
 //contract validation
 
 export type ContractType = 'ERC20' | 'ERC721'

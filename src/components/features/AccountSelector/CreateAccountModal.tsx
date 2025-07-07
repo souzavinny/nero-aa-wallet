@@ -1,16 +1,38 @@
 import React, { useState } from 'react'
 import { useAccountManager } from '@/hooks'
+import { isStorageNearFull } from '@/utils/localforage'
 
 interface CreateAccountModalProps {
   onClose: () => void
+  onStorageWarning?: (message: string) => void
 }
 
-export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ onClose }) => {
+export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
+  onClose,
+  onStorageWarning,
+}) => {
   const { createAccount, isCreatingAccount } = useAccountManager()
   const [accountName, setAccountName] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Check storage quota before proceeding
+    try {
+      const storageCheck = await isStorageNearFull()
+      if (storageCheck.isFull) {
+        console.error('Cannot create account: Storage is full')
+        if (onStorageWarning) {
+          onStorageWarning(
+            storageCheck.message || 'Storage is full. Please clear browser data to continue.',
+          )
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Error checking storage:', error)
+      // Continue with account creation if storage check fails
+    }
 
     try {
       await createAccount(accountName.trim() || undefined)

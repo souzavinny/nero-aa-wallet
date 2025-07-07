@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSignature, useAAtransfer, useSendUserOp, useConfig } from '@/hooks';
+import { useAccountManager } from '@/hooks/account/useAccountManager';
 import '@rainbow-me/rainbowkit/styles.css';
 import '@/index.css';
 import { WalletConfig } from '@/types';
@@ -10,4 +11,4 @@ interface SocialWalletProps {
     mode?: 'sidebar' | 'button';
 }
 export declare const SocialWallet: React.FC<SocialWalletProps>;
-export { useAAtransfer, useSignature, useSendUserOp, useConfig };
+export { useAAtransfer, useSignature, useSendUserOp, useConfig, useAccountManager };

@@ -1,6 +1,6 @@
 import { PaymasterToken } from '@/types/Paymaster';
 export declare const usePaymasterUI: () => {
-    screen: "selection" | "tokens";
+    screen: "tokens" | "selection";
     isFlipped: boolean;
     setIsFlipped: import("react").Dispatch<import("react").SetStateAction<boolean>>;
     localError: string | null;

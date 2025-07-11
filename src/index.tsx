@@ -18,6 +18,7 @@ import {
   TransactionProvider,
   WrapWagmiProvider,
 } from '@/contexts'
+import { GasConfigProvider } from '@/contexts/GasConfigContext'
 import { AccountConsolidationProvider } from '@/contexts/AccountConsolidationContext'
 import { useSignature, useAAtransfer, useSendUserOp, useConfig } from '@/hooks'
 import { useAccountManager } from '@/hooks/account/useAccountManager'
@@ -48,28 +49,30 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
             <AccountManagerProvider>
               <SignatureProvider>
                 <ScreenManagerProvider>
-                  <PaymasterProvider>
-                    <TokenProvider>
-                      <NFTProvider>
-                        <SendProvider>
-                          <MultiSendProvider>
-                            <ClientProvider>
-                              <AccountConsolidationProvider>
-                                <SendUserOpProvider>
-                                  <TransactionProvider>
-                                    {children}
-                                    <div style={{ position: 'relative', zIndex: zIndex }}>
-                                      <App mode={mode} />
-                                    </div>
-                                  </TransactionProvider>
-                                </SendUserOpProvider>
-                              </AccountConsolidationProvider>
-                            </ClientProvider>
-                          </MultiSendProvider>
-                        </SendProvider>
-                      </NFTProvider>
-                    </TokenProvider>
-                  </PaymasterProvider>
+                  <GasConfigProvider>
+                    <PaymasterProvider>
+                      <TokenProvider>
+                        <NFTProvider>
+                          <SendProvider>
+                            <MultiSendProvider>
+                              <ClientProvider>
+                                <AccountConsolidationProvider>
+                                  <SendUserOpProvider>
+                                    <TransactionProvider>
+                                      {children}
+                                      <div style={{ position: 'relative', zIndex: zIndex }}>
+                                        <App mode={mode} />
+                                      </div>
+                                    </TransactionProvider>
+                                  </SendUserOpProvider>
+                                </AccountConsolidationProvider>
+                              </ClientProvider>
+                            </MultiSendProvider>
+                          </SendProvider>
+                        </NFTProvider>
+                      </TokenProvider>
+                    </PaymasterProvider>
+                  </GasConfigProvider>
                 </ScreenManagerProvider>
               </SignatureProvider>
             </AccountManagerProvider>
@@ -81,3 +84,4 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
 }
 
 export { useAAtransfer, useSignature, useSendUserOp, useConfig, useAccountManager }
+export { useGasConfig } from '@/contexts/GasConfigContext'

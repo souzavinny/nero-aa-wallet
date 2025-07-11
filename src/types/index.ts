@@ -7,6 +7,7 @@ export * from './TransactionResponses'
 export * from './Paymaster'
 export * from './WalletConfig'
 export * from './Transaction'
+export * from './GasConfig'
 
 export * from './components'
 export * from './contexts'

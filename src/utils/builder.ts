@@ -3,10 +3,12 @@ import { ethers } from 'ethers'
 import { Presets } from 'userop'
 import { ConfigContext } from '@/contexts'
 import { useAccountManager } from '@/hooks'
+import { useGasConfig } from '@/contexts/GasConfigContext'
 
 export const useBuilderWithPaymaster = (signer: ethers.Signer | undefined) => {
   const config = useContext(ConfigContext)
   const { activeAccount } = useAccountManager()
+  const { applyGasLimits } = useGasConfig()
 
   const initBuilder = useCallback(
     async (usePaymaster: boolean, paymasterTokenAddress?: string, type: number = 0) => {
@@ -37,9 +39,23 @@ export const useBuilderWithPaymaster = (signer: ethers.Signer | undefined) => {
         builder.setPaymasterOptions(undefined)
       }
 
+      // Override the original execute method to apply gas limits
+      const originalExecute = builder.execute.bind(builder)
+      builder.execute = (to: string, value: any, data: any) => {
+        const result = originalExecute(to, value, data)
+        return applyGasLimits(result)
+      }
+
+      // Override the original executeBatch method to apply gas limits
+      const originalExecuteBatch = builder.executeBatch.bind(builder)
+      builder.executeBatch = (to: string[], data: any[]) => {
+        const result = originalExecuteBatch(to, data)
+        return applyGasLimits(result)
+      }
+
       return builder
     },
-    [signer, config, activeAccount],
+    [signer, config, activeAccount, applyGasLimits],
   )
 
   return { initBuilder }

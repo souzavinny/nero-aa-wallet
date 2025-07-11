@@ -4,6 +4,7 @@ import { TransactionDetailCard } from '@/components/ui/cards'
 import { LoadingScreen } from '@/components/ui/feedback'
 import { CommonContainerPanel } from '@/components/ui/layout'
 import { BottomNavigation, HeaderNavigation } from '@/components/ui/navigation'
+import { GasConfigModal } from '@/components/features/GasConfig'
 import { useConfig, useScreenManager } from '@/hooks'
 import { TransactionPreviewProps, screens } from '@/types'
 
@@ -71,6 +72,16 @@ const TransactionPreview: React.FC<TransactionPreviewProps> = ({
             >
               {children}
             </TransactionDetailCard>
+
+            {/* Gas Configuration */}
+            <div className='flex justify-center my-3'>
+              <GasConfigModal
+                buttonText='Advanced Gas Settings'
+                showGasStatus={true}
+                className='w-full max-w-xs'
+              />
+            </div>
+
             <ActionButtons
               onBack={onClose}
               onNext={handleConfirm}

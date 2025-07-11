@@ -84,4 +84,7 @@ export const SocialWallet: React.FC<SocialWalletProps> = ({
 }
 
 export { useAAtransfer, useSignature, useSendUserOp, useConfig, useAccountManager }
-export { useGasConfig } from '@/contexts/GasConfigContext'
+export { useGasConfig, GasConfigProvider } from '@/contexts/GasConfigContext'
+export { GasConfigModal, GasConfigPanel } from '@/components/features/GasConfig'
+export { TransactionPreview } from '@/components/screens/transaction'
+export type { GasConfig, GasLimits, GasConfigContextType } from '@/types/GasConfig'

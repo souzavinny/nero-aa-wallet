@@ -162,6 +162,68 @@ Required for full functionality:
 - Vite includes Node.js polyfills for Web3 compatibility
 - Buffer and process globals are available
 
+## Gas Configuration Feature
+
+### Overview
+The wallet includes an advanced gas configuration system that allows users to customize gas limits for their transactions. This feature supports both automatic priority-based gas estimation and manual custom gas limits.
+
+### Library Usage
+When using NERO AA Wallet as a library, the gas configuration feature is available through the following exports:
+
+```typescript
+import { 
+  GasConfigProvider, 
+  useGasConfig, 
+  GasConfigModal, 
+  GasConfigPanel,
+  GasConfigExample,
+  type GasConfig,
+  type GasLimits 
+} from 'nero-aa-wallet'
+```
+
+### Integration Example
+
+```typescript
+// 1. Wrap your app with GasConfigProvider
+function App() {
+  return (
+    <GasConfigProvider>
+      <YourTransactionComponent />
+    </GasConfigProvider>
+  )
+}
+
+// 2. Use the gas configuration in your components
+function YourTransactionComponent() {
+  const { gasConfig, setGasConfig } = useGasConfig()
+  
+  return (
+    <div>
+      <GasConfigModal 
+        buttonText="Advanced Gas Settings"
+        showGasStatus={true}
+      />
+      {/* Your transaction UI */}
+    </div>
+  )
+}
+```
+
+### Features
+- **Automatic Mode**: Priority-based gas estimation (slow, standard, fast, aggressive)
+- **Manual Mode**: Custom gas limits for advanced users
+- **Real-time Validation**: Input validation with safety limits
+- **Integration**: Automatic application to all UserOperations
+- **UI Components**: Ready-to-use modal and panel components
+
+### Gas Configuration Types
+- `callGasLimit`: Gas limit for transaction execution
+- `verificationGasLimit`: Gas limit for account verification
+- `preVerificationGas`: Pre-verification gas amount
+- `maxFeePerGas`: Maximum fee per gas unit
+- `maxPriorityFeePerGas`: Priority fee per gas unit
+
 ## Critical Implementation Notes
 
 ### Git Workflow
